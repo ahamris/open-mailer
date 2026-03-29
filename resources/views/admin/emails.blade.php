@@ -3,28 +3,83 @@
 @section('subtitle', 'All sent and received emails')
 
 @section('actions')
-<div class="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-    <a href="/admin/emails?direction=all" class="px-3 py-1.5 text-sm rounded-md {{ request('direction', 'all') === 'all' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700' }}">All</a>
-    <a href="/admin/emails?direction=outbound" class="px-3 py-1.5 text-sm rounded-md {{ request('direction') === 'outbound' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700' }}">Outbound</a>
-    <a href="/admin/emails?direction=inbound" class="px-3 py-1.5 text-sm rounded-md {{ request('direction') === 'inbound' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700' }}">Inbound</a>
+<div style="display:flex;gap:2px;background:var(--n100);padding:2px;border-radius:.5rem;">
+    <a href="/admin/emails?direction=all" style="padding:.375rem .75rem;font-size:.8125rem;border-radius:.375rem;text-decoration:none;{{ request('direction', 'all') === 'all' ? 'background:var(--container-bg);box-shadow:var(--shadow-sm);font-weight:500;color:var(--text-primary);' : 'color:var(--text-tertiary);' }}">All</a>
+    <a href="/admin/emails?direction=outbound" style="padding:.375rem .75rem;font-size:.8125rem;border-radius:.375rem;text-decoration:none;{{ request('direction') === 'outbound' ? 'background:var(--container-bg);box-shadow:var(--shadow-sm);font-weight:500;color:var(--text-primary);' : 'color:var(--text-tertiary);' }}">Outbound</a>
+    <a href="/admin/emails?direction=inbound" style="padding:.375rem .75rem;font-size:.8125rem;border-radius:.375rem;text-decoration:none;{{ request('direction') === 'inbound' ? 'background:var(--container-bg);box-shadow:var(--shadow-sm);font-weight:500;color:var(--text-primary);' : 'color:var(--text-tertiary);' }}">Inbound</a>
 </div>
 @endsection
 
 @section('content')
 <div class="card">
-    <table class="w-full">
+    <table class="tbl">
         <thead>
-            <tr class="border-b border-gray-100">
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Dir</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">From</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">To</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Subject</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Auth</th>
-                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Date</th>
+            <tr>
+                <th>Status</th>
+                <th>Dir</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Subject</th>
+                <th>Auth</th>
+                <th>Date</th>
             </tr>
         </thead>
         <tbody>
             @forelse($emails as $email)
-            <tr class="border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onclick="document.getElementById('modal-{{ $email->id }}').showModal()">
-                <td class="px-5 py-3">
+            <tr style="cursor:pointer;" onclick="document.getElementById('modal-{{ $email->id }}').showModal()">
+                <td>
+                    @switch($email->status)
+                        @case('sent') @case('delivered') @case('received')
+                            <span class="badge badge--success"><span class="dot"></span>{{ ucfirst($email->status) }}</span>
+                            @break
+                        @case('queued') @case('sending')
+                            <span class="badge badge--warning"><span class="dot"></span>{{ ucfirst($email->status) }}</span>
+                            @break
+                        @case('failed') @case('bounced')
+                            <span class="badge badge--danger"><span class="dot"></span>{{ ucfirst($email->status) }}</span>
+                            @break
+                        @default
+                            <span class="badge badge--neutral"><span class="dot"></span>{{ ucfirst($email->status) }}</span>
+                    @endswitch
+                </td>
+                <td class="tbl__text-muted">{{ $email->direction === 'inbound' ? 'IN' : 'OUT' }}</td>
+                <td class="tbl__truncate">{{ $email->from_address }}</td>
+                <td class="tbl__truncate">{{ is_array($email->to_addresses) ? implode(', ', $email->to_addresses) : $email->to_addresses }}</td>
+                <td class="tbl__text-primary tbl__truncate">{{ $email->subject }}</td>
+                <td>
+                    @if($email->spf_result === 'pass')<span class="text-xs" style="color:var(--g500);">SPF</span>@elseif($email->spf_result)<span class="text-xs" style="color:var(--r400);">SPF</span>@endif
+                    @if($email->dkim_result === 'pass')<span class="text-xs" style="color:var(--g500);">DKIM</span>@elseif($email->dkim_result)<span class="text-xs" style="color:var(--r400);">DKIM</span>@endif
+                </td>
+                <td class="tbl__text-muted nowrap">{{ $email->created_at->format('M d, H:i') }}</td>
+            </tr>
+
+            <dialog id="modal-{{ $email->id }}">
+                <div class="dialog__header"><div class="dialog__title">{{ $email->subject }}</div></div>
+                <div class="dialog__body">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:.8125rem;color:var(--text-secondary);">
+                        <div><strong>From:</strong> {{ $email->from_name }} &lt;{{ $email->from_address }}&gt;</div>
+                        <div><strong>To:</strong> {{ is_array($email->to_addresses) ? implode(', ', $email->to_addresses) : $email->to_addresses }}</div>
+                        <div><strong>Status:</strong> {{ $email->status }}</div>
+                        <div><strong>Message-ID:</strong> <span class="text-xs">{{ $email->message_id }}</span></div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+                    @if($email->html_body)
+                        <iframe srcdoc="{{ e($email->html_body) }}" sandbox="" style="width:100%;min-height:16rem;border:1px solid var(--border);border-radius:.5rem;background:white;"></iframe>
+                    @else
+                        <pre style="white-space:pre-wrap;font-size:.8125rem;color:var(--text-secondary);background:var(--n50);padding:1rem;border-radius:.5rem;">{{ $email->text_body }}</pre>
+                    @endif
+                </div>
+                <div class="dialog__footer">
+                    <button class="btn btn--secondary" onclick="document.getElementById('modal-{{ $email->id }}').close()">Close</button>
+                </div>
+            </dialog>
+            @empty
+            <tr><td colspan="7" class="tbl__empty">No emails yet</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+@if($emails->hasPages())
+<div style="margin-top:1rem;">{{ $emails->links() }}</div>
+@endif
+@endsection

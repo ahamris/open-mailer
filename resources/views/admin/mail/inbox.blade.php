@@ -1,86 +1,78 @@
 @extends('layouts.admin')
 @section('title', 'Mail - ' . ucfirst($folder))
+@section('actions')
+    <a href="/admin/mail/compose" class="btn btn--success">+ New email</a>
+@endsection
 
 @section('content')
-<div class="flex items-center justify-between mb-4">
-    <h2 class="text-2xl font-bold">Mail</h2>
-    <a href="/admin/mail/compose" class="btn btn-primary btn-sm">+ Nieuwe mail</a>
-</div>
-
-<div class="flex gap-4">
+<div style="display:flex;gap:1.5rem;">
     <!-- Folder sidebar -->
-    <div class="w-48 shrink-0">
-        <ul class="menu bg-base-100 rounded-box shadow w-full">
-            <li><a href="/admin/mail?folder=inbox" class="{{ $folder === 'inbox' ? 'active' : '' }}">Inbox @if($unreadCount > 0)<span class="badge badge-sm badge-primary">{{ $unreadCount }}</span>@endif</a></li>
-            <li><a href="/admin/mail?folder=sent" class="{{ $folder === 'sent' ? 'active' : '' }}">Verzonden</a></li>
-            <li><a href="/admin/mail?folder=starred" class="{{ $folder === 'starred' ? 'active' : '' }}">Met ster</a></li>
-            <li><a href="/admin/mail?folder=drafts" class="{{ $folder === 'drafts' ? 'active' : '' }}">Concepten</a></li>
-            <li><a href="/admin/mail?folder=trash" class="{{ $folder === 'trash' ? 'active' : '' }}">Prullenbak</a></li>
-        </ul>
+    <div style="width:12rem;flex-shrink:0;">
+        <nav class="card" style="padding:.5rem;">
+            @php $folders = ['inbox'=>'Inbox','sent'=>'Sent','starred'=>'Starred','drafts'=>'Drafts','trash'=>'Trash']; @endphp
+            @foreach($folders as $key => $label)
+                <a href="/admin/mail?folder={{ $key }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.875rem;text-decoration:none;font-weight:{{ $folder === $key ? '500' : '400' }};color:{{ $folder === $key ? 'var(--b600)' : 'var(--text-secondary)' }};background:{{ $folder === $key ? 'var(--b100)' : 'transparent' }};">
+                    {{ $label }}
+                    @if($key === 'inbox' && $unreadCount > 0)
+                        <span class="sidenav__item-badge" style="float:right;">{{ $unreadCount }}</span>
+                    @endif
+                </a>
+            @endforeach
+        </nav>
     </div>
 
     <!-- Email list -->
-    <div class="flex-1">
-        <!-- Search -->
-        <form method="GET" action="/admin/mail" class="mb-4">
+    <div style="flex:1;min-width:0;">
+        <form method="GET" action="/admin/mail" style="margin-bottom:1rem;">
             <input type="hidden" name="folder" value="{{ $folder }}">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Zoek in e-mails..." class="input input-bordered w-full" />
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Search emails..." class="form-input">
         </form>
 
-        <div class="bg-base-100 rounded-box shadow">
+        <div class="card">
             @forelse($emails as $email)
-            <a href="/admin/mail/{{ $email->id }}" class="flex items-center gap-3 p-3 border-b border-base-200 hover:bg-base-200 transition-colors {{ !$email->is_read && $email->direction === 'inbound' ? 'font-semibold bg-primary/5' : '' }}">
+            <a href="/admin/mail/{{ $email->id }}" style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid rgba(12,10,9,0.05);text-decoration:none;color:inherit;transition:background .1s;{{ !$email->is_read && $email->direction === 'inbound' ? 'font-weight:600;background:var(--b50);' : '' }}" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='{{ !$email->is_read && $email->direction === 'inbound' ? 'var(--b50)' : '' }}'">
                 <!-- Star -->
-                <form method="POST" action="/admin/mail/{{ $email->id }}/star" onclick="event.stopPropagation()">
+                <form method="POST" action="/admin/mail/{{ $email->id }}/star" onclick="event.stopPropagation();event.preventDefault();this.submit();" style="margin:0;">
                     @csrf
-                    <button class="btn btn-ghost btn-xs p-0">
-                        @if($email->is_starred)
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-warning fill-warning" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        @else
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                        @endif
+                    <button style="background:none;border:none;cursor:pointer;padding:0;color:{{ $email->is_starred ? 'var(--y400)' : 'var(--n300)' }};">
+                        <svg style="width:1rem;height:1rem;" fill="{{ $email->is_starred ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
                     </button>
                 </form>
 
-                <!-- Direction badge -->
-                <span class="badge badge-{{ $email->direction === 'inbound' ? 'info' : 'ghost' }} badge-xs w-8">{{ $email->direction === 'inbound' ? 'IN' : 'UIT' }}</span>
+                <!-- Direction -->
+                <span style="font-size:.6875rem;color:var(--text-tertiary);width:1.5rem;">{{ $email->direction === 'inbound' ? 'IN' : 'OUT' }}</span>
 
                 <!-- Unread dot -->
                 @if(!$email->is_read && $email->direction === 'inbound')
-                    <span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+                    <span style="width:.5rem;height:.5rem;border-radius:999px;background:var(--b500);flex-shrink:0;"></span>
                 @else
-                    <span class="w-2 shrink-0"></span>
+                    <span style="width:.5rem;flex-shrink:0;"></span>
                 @endif
 
                 <!-- Sender -->
-                <span class="w-48 truncate text-sm">{{ $email->direction === 'inbound' ? ($email->from_name ?? $email->from_address) : implode(', ', $email->to_addresses ?? []) }}</span>
+                <span class="truncate" style="width:12rem;font-size:.875rem;">{{ $email->direction === 'inbound' ? ($email->from_name ?? $email->from_address) : implode(', ', $email->to_addresses ?? []) }}</span>
 
                 <!-- Subject + preview -->
-                <span class="flex-1 truncate text-sm">
+                <span class="truncate" style="flex:1;font-size:.875rem;">
                     {{ $email->subject }}
-                    <span class="text-base-content/40 font-normal"> — {{ Str::limit(strip_tags($email->html_body ?? $email->text_body ?? ''), 80) }}</span>
+                    <span style="color:var(--n400);font-weight:400;"> — {{ Str::limit(strip_tags($email->html_body ?? $email->text_body ?? ''), 60) }}</span>
                 </span>
 
-                <!-- Auth badges -->
-                @if($email->spf_result)
-                    <span class="badge badge-{{ $email->spf_result === 'pass' ? 'success' : 'error' }} badge-xs">SPF</span>
-                @endif
-
                 <!-- Date -->
-                <span class="text-xs text-base-content/50 w-20 text-right shrink-0">
-                    {{ $email->created_at->isToday() ? $email->created_at->format('H:i') : $email->created_at->format('d M') }}
+                <span class="nowrap" style="font-size:.8125rem;color:var(--text-tertiary);width:5rem;text-align:right;">
+                    {{ $email->created_at->isToday() ? $email->created_at->format('H:i') : $email->created_at->format('M d') }}
                 </span>
             </a>
             @empty
-            <div class="p-12 text-center text-base-content/40">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                Geen e-mails in {{ $folder }}
+            <div style="padding:4rem 1rem;text-align:center;color:var(--n400);">
+                <svg style="width:3rem;height:3rem;margin:0 auto .75rem;opacity:.4;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                No emails in {{ $folder }}
             </div>
             @endforelse
         </div>
 
         @if($emails->hasPages())
-        <div class="mt-4">{{ $emails->links() }}</div>
+        <div style="margin-top:1rem;">{{ $emails->links() }}</div>
         @endif
     </div>
 </div>
