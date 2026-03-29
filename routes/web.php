@@ -9,6 +9,9 @@ use App\Http\Controllers\Admin\MailClientController;
 use App\Http\Controllers\Admin\WorkflowController;
 use App\Http\Controllers\Admin\DocsController;
 use App\Http\Controllers\Admin\AiSettingsController;
+use App\Http\Controllers\Admin\TemplateController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\BroadcastController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect('/admin'));
@@ -30,6 +33,33 @@ Route::middleware('auth:admin')->prefix('admin')->group(function () {
     Route::post('/mail/{id}/ai-summarize', [MailClientController::class, 'aiSummarize']);
     Route::post('/mail/ai-compose', [MailClientController::class, 'aiCompose']);
 
+    // Templates
+    Route::get('/templates', [TemplateController::class, 'index']);
+    Route::get('/templates/create', [TemplateController::class, 'create']);
+    Route::post('/templates', [TemplateController::class, 'store']);
+    Route::get('/templates/{id}/edit', [TemplateController::class, 'edit']);
+    Route::put('/templates/{id}', [TemplateController::class, 'update']);
+    Route::delete('/templates/{id}', [TemplateController::class, 'destroy']);
+
+    // Contacts & Audiences
+    Route::get('/contacts', [ContactController::class, 'index']);
+    Route::get('/contacts/create', [ContactController::class, 'create']);
+    Route::post('/contacts', [ContactController::class, 'store']);
+    Route::get('/contacts/{id}/edit', [ContactController::class, 'edit']);
+    Route::put('/contacts/{id}', [ContactController::class, 'update']);
+    Route::delete('/contacts/{id}', [ContactController::class, 'destroy']);
+    Route::post('/audiences', [ContactController::class, 'storeAudience']);
+    Route::delete('/audiences/{id}', [ContactController::class, 'destroyAudience']);
+
+    // Broadcasts
+    Route::get('/broadcasts', [BroadcastController::class, 'index']);
+    Route::get('/broadcasts/create', [BroadcastController::class, 'create']);
+    Route::post('/broadcasts', [BroadcastController::class, 'store']);
+    Route::get('/broadcasts/{id}/edit', [BroadcastController::class, 'edit']);
+    Route::put('/broadcasts/{id}', [BroadcastController::class, 'update']);
+    Route::post('/broadcasts/{id}/send', [BroadcastController::class, 'send']);
+    Route::delete('/broadcasts/{id}', [BroadcastController::class, 'destroy']);
+
     // Workflows
     Route::get('/workflows', [WorkflowController::class, 'index']);
     Route::get('/workflows/create', [WorkflowController::class, 'create']);
@@ -45,7 +75,7 @@ Route::middleware('auth:admin')->prefix('admin')->group(function () {
     Route::post('/ai-settings', [AiSettingsController::class, 'store']);
     Route::post('/ai-settings/test', [AiSettingsController::class, 'test']);
 
-    // Beheer
+    // Settings
     Route::get('/emails', [EmailController::class, 'index']);
     Route::get('/api-keys', [ApiKeyController::class, 'index']);
     Route::post('/api-keys', [ApiKeyController::class, 'store']);
