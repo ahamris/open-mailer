@@ -1,0 +1,458 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CLOM — CodeLabs Open Mailer API",
+    "description": "Self-hosted, Resend-compatible email API. Bouw e-mailfunctionaliteit in je applicatie met een simpele REST API.\n\n## Authenticatie\nAlle API-requests vereisen een Bearer token:\n```\nAuthorization: Bearer clom_xxxxxxxxxx\n```\n\n## Rate Limiting\nStandaard 10 requests per seconde per API key.\n\n## Fouten\nDe API retourneert JSON-fouten met `statusCode`, `message` en `name` velden.",
+    "version": "0.1.0",
+    "contact": {
+      "name": "CodeLabs B.V.",
+      "url": "https://code-labs.nl",
+      "email": "dev@code-labs.nl"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "CLOM API Server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {"name": "Emails", "description": "Verstuur, ontvang en beheer e-mails"},
+    {"name": "Domains", "description": "Beheer verzendende domeinen en DNS-verificatie"},
+    {"name": "API Keys", "description": "Beheer API-sleutels voor authenticatie"},
+    {"name": "Contacts", "description": "Beheer contacten en mailinglijsten"},
+    {"name": "Templates", "description": "E-mailtemplates met variabelen"},
+    {"name": "Webhooks", "description": "Ontvang real-time notificaties over e-mailgebeurtenissen"},
+    {"name": "Workflows", "description": "Automatiseer acties op inkomende e-mails"}
+  ],
+  "paths": {
+    "/emails": {
+      "post": {
+        "tags": ["Emails"],
+        "operationId": "sendEmail",
+        "summary": "Verstuur een e-mail",
+        "description": "Verstuur een e-mail via SMTP. De mail wordt asynchroon verwerkt via een queue.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SendEmailRequest"},
+              "examples": {
+                "simple": {
+                  "summary": "Simpele HTML mail",
+                  "value": {
+                    "from": "CodeLabs <info@code-labs.nl>",
+                    "to": "klant@voorbeeld.nl",
+                    "subject": "Welkom bij CLOM",
+                    "html": "<h1>Welkom!</h1><p>Uw account is aangemaakt.</p>"
+                  }
+                },
+                "withAttachments": {
+                  "summary": "Mail met CC en tags",
+                  "value": {
+                    "from": "Facturatie <facturen@code-labs.nl>",
+                    "to": ["klant@voorbeeld.nl"],
+                    "cc": ["admin@code-labs.nl"],
+                    "subject": "Factuur #2026-001",
+                    "html": "<p>Bijgevoegd uw factuur.</p>",
+                    "tags": [{"name": "type", "value": "factuur"}],
+                    "headers": {"X-Entity-Ref-ID": "factuur-2026-001"}
+                  }
+                },
+                "scheduled": {
+                  "summary": "Geplande mail",
+                  "value": {
+                    "from": "Newsletter <nieuws@code-labs.nl>",
+                    "to": "subscriber@voorbeeld.nl",
+                    "subject": "Maandelijkse update",
+                    "html": "<h1>Update maart 2026</h1>",
+                    "scheduled_at": "2026-04-01T09:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail geaccepteerd voor verzending",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/EmailIdResponse"}
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "422": {"$ref": "#/components/responses/ValidationError"},
+          "429": {"$ref": "#/components/responses/RateLimited"}
+        }
+      },
+      "get": {
+        "tags": ["Emails"],
+        "operationId": "listEmails",
+        "summary": "Lijst van verzonden e-mails",
+        "description": "Haal een gepagineerde lijst op van alle verzonden e-mails, gesorteerd op datum (nieuwste eerst).",
+        "parameters": [
+          {"name": "cursor", "in": "query", "schema": {"type": "string"}, "description": "Cursor voor paginatie"}
+        ],
+        "responses": {
+          "200": {
+            "description": "Lijst van e-mails",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/Email"}
+                    },
+                    "next_cursor": {"type": "string", "nullable": true},
+                    "prev_cursor": {"type": "string", "nullable": true}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    },
+    "/emails/batch": {
+      "post": {
+        "tags": ["Emails"],
+        "operationId": "sendBatchEmails",
+        "summary": "Verstuur batch e-mails",
+        "description": "Verstuur tot 100 e-mails in één request. Elke mail wordt apart verwerkt in de queue.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {"$ref": "#/components/schemas/SendEmailRequest"},
+                "maxItems": 100
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch geaccepteerd",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/EmailIdResponse"}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "422": {"$ref": "#/components/responses/ValidationError"}
+        }
+      }
+    },
+    "/emails/{id}": {
+      "get": {
+        "tags": ["Emails"],
+        "operationId": "getEmail",
+        "summary": "Haal e-mail op",
+        "description": "Haal de details van een specifieke e-mail op, inclusief status en inhoud.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}, "description": "Email UUID"}
+        ],
+        "responses": {
+          "200": {
+            "description": "E-maildetails",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/EmailDetail"}
+              }
+            }
+          },
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      },
+      "patch": {
+        "tags": ["Emails"],
+        "operationId": "updateEmail",
+        "summary": "Wijzig geplande e-mail",
+        "description": "Wijzig het verzendtijdstip van een geplande e-mail. Alleen mogelijk als status 'scheduled' is.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduled_at": {"type": "string", "format": "date-time"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "E-mail bijgewerkt", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/EmailIdResponse"}}}},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      },
+      "delete": {
+        "tags": ["Emails"],
+        "operationId": "cancelEmail",
+        "summary": "Annuleer geplande e-mail",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "E-mail geannuleerd",
+            "content": {"application/json": {"schema": {"type": "object", "properties": {"id": {"type": "string"}, "deleted": {"type": "boolean"}}}}}
+          },
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      }
+    },
+    "/domains": {
+      "get": {
+        "tags": ["Domains"],
+        "operationId": "listDomains",
+        "summary": "Lijst van domeinen",
+        "responses": {
+          "200": {
+            "description": "Domeinen lijst",
+            "content": {"application/json": {"schema": {"type": "object", "properties": {"data": {"type": "array", "items": {"$ref": "#/components/schemas/Domain"}}}}}}
+          }
+        }
+      },
+      "post": {
+        "tags": ["Domains"],
+        "operationId": "createDomain",
+        "summary": "Voeg domein toe",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string", "example": "code-labs.nl"}}}
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Domein aangemaakt", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Domain"}}}}
+        }
+      }
+    },
+    "/domains/{id}": {
+      "get": {
+        "tags": ["Domains"],
+        "operationId": "getDomain",
+        "summary": "Haal domein op",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {"200": {"description": "Domein details", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Domain"}}}}}
+      },
+      "delete": {
+        "tags": ["Domains"],
+        "operationId": "deleteDomain",
+        "summary": "Verwijder domein",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {"200": {"description": "Domein verwijderd"}}
+      }
+    },
+    "/domains/{id}/verify": {
+      "post": {
+        "tags": ["Domains"],
+        "operationId": "verifyDomain",
+        "summary": "Verifieer DNS-records",
+        "description": "Controleert SPF, DKIM, DMARC en MX records van het domein.",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {"200": {"description": "Verificatie resultaat", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Domain"}}}}}
+      }
+    },
+    "/api-keys": {
+      "get": {
+        "tags": ["API Keys"],
+        "operationId": "listApiKeys",
+        "summary": "Lijst API-sleutels",
+        "responses": {"200": {"description": "API keys", "content": {"application/json": {"schema": {"type": "object", "properties": {"data": {"type": "array", "items": {"$ref": "#/components/schemas/ApiKey"}}}}}}}}
+      },
+      "post": {
+        "tags": ["API Keys"],
+        "operationId": "createApiKey",
+        "summary": "Maak API-sleutel aan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string", "example": "Production"},
+                  "permission": {"type": "string", "enum": ["full_access", "sending_access"], "default": "full_access"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API key aangemaakt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "token": {"type": "string", "description": "De volledige API key — wordt slechts één keer getoond", "example": "clom_abc123..."}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-keys/{id}": {
+      "delete": {
+        "tags": ["API Keys"],
+        "operationId": "deleteApiKey",
+        "summary": "Verwijder API-sleutel",
+        "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}}],
+        "responses": {"200": {"description": "API key verwijderd"}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key als Bearer token. Voorbeeld: `Authorization: Bearer clom_xxxxxxxxxx`"
+      }
+    },
+    "schemas": {
+      "SendEmailRequest": {
+        "type": "object",
+        "required": ["from", "to", "subject"],
+        "properties": {
+          "from": {"type": "string", "description": "Afzenderadres, optioneel met naam", "example": "CodeLabs <info@code-labs.nl>"},
+          "to": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}], "description": "Ontvanger(s), max 50", "example": "klant@voorbeeld.nl"},
+          "subject": {"type": "string", "description": "Onderwerp", "example": "Welkom bij CLOM"},
+          "html": {"type": "string", "description": "HTML body", "example": "<h1>Hallo!</h1>"},
+          "text": {"type": "string", "description": "Platte tekst body (auto-gegenereerd uit HTML indien weggelaten)"},
+          "cc": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}], "description": "CC-ontvangers"},
+          "bcc": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}], "description": "BCC-ontvangers"},
+          "reply_to": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}], "description": "Reply-to adres(sen)"},
+          "headers": {"type": "object", "additionalProperties": {"type": "string"}, "description": "Custom e-mailheaders"},
+          "tags": {"type": "array", "items": {"type": "object", "properties": {"name": {"type": "string"}, "value": {"type": "string"}}}, "description": "Metadata tags voor tracking"},
+          "scheduled_at": {"type": "string", "format": "date-time", "description": "Gepland verzendtijdstip (ISO 8601)"},
+          "idempotency_key": {"type": "string", "description": "Voorkomt dubbele verzending (24 uur geldig, max 256 tekens)"}
+        }
+      },
+      "EmailIdResponse": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "format": "uuid", "example": "019d39bc-5508-7356-8c58-bb93aa3f76f9"}
+        }
+      },
+      "Email": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "direction": {"type": "string", "enum": ["outbound", "inbound"]},
+          "status": {"type": "string", "enum": ["queued", "sending", "sent", "delivered", "bounced", "failed", "scheduled", "received"]},
+          "from_address": {"type": "string"},
+          "from_name": {"type": "string", "nullable": true},
+          "to_addresses": {"type": "array", "items": {"type": "string"}},
+          "subject": {"type": "string"},
+          "created_at": {"type": "string", "format": "date-time"},
+          "sent_at": {"type": "string", "format": "date-time", "nullable": true}
+        }
+      },
+      "EmailDetail": {
+        "allOf": [
+          {"$ref": "#/components/schemas/Email"},
+          {
+            "type": "object",
+            "properties": {
+              "html": {"type": "string", "nullable": true},
+              "text": {"type": "string", "nullable": true},
+              "cc": {"type": "array", "items": {"type": "string"}, "nullable": true},
+              "bcc": {"type": "array", "items": {"type": "string"}, "nullable": true},
+              "reply_to": {"type": "array", "items": {"type": "string"}, "nullable": true},
+              "tags": {"type": "array", "items": {"type": "object"}, "nullable": true},
+              "headers": {"type": "object", "nullable": true}
+            }
+          }
+        ]
+      },
+      "Domain": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "name": {"type": "string", "example": "code-labs.nl"},
+          "status": {"type": "string", "enum": ["pending", "verified", "failed"]},
+          "spf_valid": {"type": "boolean"},
+          "dkim_valid": {"type": "boolean"},
+          "dmarc_valid": {"type": "boolean"},
+          "mx_valid": {"type": "boolean"},
+          "dns_records": {"type": "array", "items": {"type": "object"}},
+          "verified_at": {"type": "string", "format": "date-time", "nullable": true},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "name": {"type": "string"},
+          "key_prefix": {"type": "string", "example": "clom_hhtYtj9o"},
+          "permission": {"type": "string", "enum": ["full_access", "sending_access"]},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": {"type": "integer"},
+          "message": {"type": "string"},
+          "name": {"type": "string"}
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Ontbrekende of ongeldige API key",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}, "example": {"statusCode": 401, "message": "Missing API key", "name": "missing_api_key"}}}
+      },
+      "NotFound": {
+        "description": "Resource niet gevonden",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}, "example": {"statusCode": 404, "message": "Not found", "name": "not_found"}}}
+      },
+      "ValidationError": {
+        "description": "Validatiefout",
+        "content": {"application/json": {"schema": {"type": "object", "properties": {"message": {"type": "string"}, "errors": {"type": "object"}}}}}
+      },
+      "RateLimited": {
+        "description": "Rate limit bereikt",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}, "example": {"statusCode": 429, "message": "Too many requests", "name": "rate_limit_exceeded"}}}
+      }
+    }
+  }
+}
