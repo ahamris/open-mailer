@@ -4,7 +4,7 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl font-bold">API Documentatie</h2>
-    <a href="/admin/docs/swagger" target="_blank" class="btn btn-primary btn-sm">Open Swagger UI &nearr;</a>
+    <a href="/admin/docs/swagger" target="_blank" class="btn btn-primary btn--sm">Open Swagger UI &nearr;</a>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">

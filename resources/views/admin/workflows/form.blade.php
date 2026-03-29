@@ -1,9 +1,9 @@
 @extends('layouts.admin')
-@section('title', $workflow ? 'Workflow bewerken' : 'Nieuwe workflow')
+@section('title', $workflow ? 'Edit workflow' : 'New workflow')
 
 @section('content')
 <div class="mb-4">
-    <a href="/admin/workflows" class="btn btn-ghost btn-sm">&larr; Terug</a>
+    <a href="/admin/workflows" class="btn btn--ghost btn--sm">&larr; Terug</a>
 </div>
 
 <form method="POST" action="{{ $workflow ? '/admin/workflows/' . $workflow->id : '/admin/workflows' }}" class="max-w-4xl">
@@ -11,7 +11,7 @@
     @if($workflow) @method('PUT') @endif
 
     <div class="bg-base-100 rounded-box shadow p-5 space-y-4">
-        <h2 class="text-xl font-bold">{{ $workflow ? 'Workflow bewerken' : 'Nieuwe workflow' }}</h2>
+        <h2 class="card__header-title">{{ $workflow ? 'Edit workflow' : 'New workflow' }}</h2>
 
         <fieldset class="fieldset">
             <label class="fieldset-label">Naam</label>
@@ -35,7 +35,7 @@
             <div id="triggers-container">
                 <!-- Dynamisch gevuld -->
             </div>
-            <button type="button" class="btn btn-ghost btn-sm mt-2" onclick="addTrigger()">+ Trigger toevoegen</button>
+            <button type="button" class="btn btn--ghost btn--sm mt-2" onclick="addTrigger()">+ Trigger toevoegen</button>
             <textarea name="triggers" id="triggers-json" class="hidden"></textarea>
         </div>
 
@@ -46,14 +46,14 @@
             <div id="actions-container">
                 <!-- Dynamisch gevuld -->
             </div>
-            <button type="button" class="btn btn-ghost btn-sm mt-2" onclick="addAction()">+ Actie toevoegen</button>
+            <button type="button" class="btn btn--ghost btn--sm mt-2" onclick="addAction()">+ Actie toevoegen</button>
             <textarea name="actions" id="actions-json" class="hidden"></textarea>
         </div>
     </div>
 
     <div class="mt-4 flex gap-2">
-        <button type="submit" class="btn btn-primary" onclick="serializeForm()">Opslaan</button>
-        <a href="/admin/workflows" class="btn btn-ghost">Annuleer</a>
+        <button type="submit" class="btn btn--primary" onclick="serializeForm()">Save</button>
+        <a href="/admin/workflows" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
 
@@ -111,7 +111,7 @@ function addTrigger(data = {}) {
             ${operators.map(o => `<option value="${o.value}" ${data.operator === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}
         </select>
         <input data-trigger="${i}" data-key="value" class="input input-bordered input-sm flex-1" value="${data.value || ''}" placeholder="waarde">
-        <button type="button" class="btn btn-ghost btn-sm text-error" onclick="this.parentElement.remove()">X</button>
+        <button type="button" class="btn btn--ghost btn--sm text-error" onclick="this.parentElement.remove()">X</button>
     `;
     container.appendChild(div);
 }
@@ -127,7 +127,7 @@ function addAction(data = {}) {
             ${actionTypes.map(a => `<option value="${a.value}" ${data.type === a.value ? 'selected' : ''}>${a.label}</option>`).join('')}
         </select>
         <div id="action-fields-${i}" class="flex-1 flex gap-2 flex-wrap"></div>
-        <button type="button" class="btn btn-ghost btn-sm text-error" onclick="this.parentElement.remove()">X</button>
+        <button type="button" class="btn btn--ghost btn--sm text-error" onclick="this.parentElement.remove()">X</button>
     `;
     container.appendChild(div);
     updateActionFields(i, data.type || 'auto_reply', data);

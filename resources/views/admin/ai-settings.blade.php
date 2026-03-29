@@ -40,8 +40,8 @@
         </fieldset>
 
         <div class="flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">Opslaan</button>
-            <button type="button" class="btn btn-ghost" onclick="testAi()">Test verbinding</button>
+            <button type="submit" class="btn btn--primary">Save</button>
+            <button type="button" class="btn btn--ghost" onclick="testAi()">Test verbinding</button>
         </div>
 
         <div id="test-result" class="hidden mt-4"></div>

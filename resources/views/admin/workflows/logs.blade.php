@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="mb-4">
-    <a href="/admin/workflows" class="btn btn-ghost btn-sm">&larr; Terug</a>
+    <a href="/admin/workflows" class="btn btn-ghost btn--sm">&larr; Terug</a>
 </div>
 
 <h2 class="text-2xl font-bold mb-4">Logs: {{ $workflow->name }}</h2>
@@ -23,7 +23,7 @@
                 <td class="text-sm max-w-xs truncate">{{ $log->result }}</td>
             </tr>
             @empty
-            <tr><td colspan="5" class="text-center text-base-content/40 py-8">Nog geen logs</td></tr>
+            <tr><td colspan="5" class="text-center text-base-content/40 py-8">No logs yet</td></tr>
             @endforelse
         </tbody>
     </table>
