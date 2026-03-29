@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -21,17 +22,13 @@ class MailClientController extends Controller
         $folder = $request->get('folder', 'inbox');
         $query = Email::orderByDesc('created_at');
 
-        if ($folder === 'inbox') {
-            $query->where('direction', 'inbound')->where('folder', 'inbox');
-        } elseif ($folder === 'sent') {
-            $query->where('direction', 'outbound');
-        } elseif ($folder === 'starred') {
-            $query->where('is_starred', true);
-        } elseif ($folder === 'drafts') {
-            $query->where('status', 'draft');
-        } else {
-            $query->where('folder', $folder);
-        }
+        match ($folder) {
+            'inbox' => $query->where('direction', 'inbound')->where('folder', 'inbox'),
+            'sent' => $query->where('direction', 'outbound'),
+            'starred' => $query->where('is_starred', true),
+            'drafts' => $query->where('status', 'draft'),
+            default => $query->where('folder', $folder),
+        };
 
         if ($search = $request->get('q')) {
             $query->where(function ($q) use ($search) {
@@ -63,7 +60,7 @@ class MailClientController extends Controller
 
     public function compose(Request $request)
     {
-        $replyTo = $request->reply_to ? Email::find($request->reply_to) : null;
+        $replyTo = $request->has('reply_to') ? Email::find($request->get('reply_to')) : null;
         $mailboxes = Mailbox::where('active', true)->get();
         return view('admin.mail.compose', compact('replyTo', 'mailboxes'));
     }
@@ -82,8 +79,8 @@ class MailClientController extends Controller
         $toAddresses = array_map('trim', explode(',', $validated['to']));
         $ccAddresses = !empty($validated['cc']) ? array_map('trim', explode(',', $validated['cc'])) : null;
 
-        $parentEmail = $validated['reply_to_id'] ? Email::find($validated['reply_to_id']) : null;
-        $threadId = $parentEmail?->thread_id ?? ($parentEmail ? $parentEmail->id : Str::uuid()->toString());
+        $parentEmail = !empty($validated['reply_to_id']) ? Email::find($validated['reply_to_id']) : null;
+        $threadId = $parentEmail?->thread_id ?? ($parentEmail?->id ?? Str::uuid()->toString());
 
         $email = $this->mailService->send([
             'from' => $validated['from'],
@@ -99,7 +96,7 @@ class MailClientController extends Controller
             'folder' => 'sent',
         ]);
 
-        return redirect('/admin/mail')->with('success', 'E-mail verstuurd!');
+        return redirect('/admin/mail?folder=sent')->with('success', 'Email sent successfully!');
     }
 
     public function toggleStar(string $id)
@@ -112,23 +109,26 @@ class MailClientController extends Controller
     public function moveToTrash(string $id)
     {
         Email::findOrFail($id)->update(['folder' => 'trash']);
-        return back()->with('success', 'Verplaatst naar prullenbak');
+        return back()->with('success', 'Moved to trash');
     }
 
     public function aiCompose(Request $request)
     {
-        $request->validate(['prompt' => 'required|string', 'reply_to_id' => 'nullable|uuid']);
+        $validated = $request->validate([
+            'prompt' => 'required|string',
+            'reply_to_id' => 'nullable|string',
+        ]);
 
-        $replyTo = $request->reply_to_id ? Email::find($request->reply_to_id) : null;
-        $result = $this->aiService->compose($request->prompt, $replyTo);
+        $replyTo = !empty($validated['reply_to_id']) ? Email::find($validated['reply_to_id']) : null;
+        $result = $this->aiService->compose($validated['prompt'], $replyTo);
 
         if ($replyTo) {
-            $this->aiService->saveConversation($replyTo, 'reply', $request->prompt, $result);
+            $this->aiService->saveConversation($replyTo, 'reply', $validated['prompt'], $result);
         }
 
         return response()->json([
             'content' => $result['content'],
-            'tokens' => $result['input_tokens'] + $result['output_tokens'],
+            'tokens' => ($result['input_tokens'] ?? 0) + ($result['output_tokens'] ?? 0),
         ]);
     }
 
@@ -136,7 +136,7 @@ class MailClientController extends Controller
     {
         $email = Email::findOrFail($id);
         $result = $this->aiService->summarize($email);
-        $this->aiService->saveConversation($email, 'summarize', 'Vat samen', $result);
+        $this->aiService->saveConversation($email, 'summarize', 'Summarize', $result);
         return response()->json(['summary' => $result['content']]);
     }
 }

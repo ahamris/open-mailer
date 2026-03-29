@@ -1,80 +1,75 @@
 @extends('layouts.admin')
 @section('title', 'API Keys')
+@section('subtitle', 'Manage authentication keys for the CLOM API')
+@section('actions')
+    <button class="btn-green" onclick="document.getElementById('create-key').showModal()">+ New key</button>
+@endsection
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-bold">API Keys</h2>
-    <button class="btn btn-primary btn-sm" onclick="document.getElementById('create-key').showModal()">+ Nieuwe key</button>
-</div>
-
 @if(session('new_key'))
-<div class="alert alert-warning mb-4">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-    <div>
-        <p class="font-bold">Kopieer je API key - wordt niet meer getoond!</p>
-        <code class="text-sm bg-base-300 px-2 py-1 rounded select-all">{{ session('new_key') }}</code>
-    </div>
+<div class="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm">
+    <p class="font-medium">Copy your API key — it won't be shown again!</p>
+    <code class="mt-1 block bg-white px-3 py-2 rounded border border-amber-200 font-mono text-sm select-all">{{ session('new_key') }}</code>
 </div>
 @endif
 
-<div class="bg-base-100 rounded-box shadow">
-    <div class="overflow-x-auto">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Naam</th>
-                    <th>Key prefix</th>
-                    <th>Rechten</th>
-                    <th>Laatst gebruikt</th>
-                    <th>Aangemaakt</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($apiKeys as $key)
-                <tr>
-                    <td class="font-medium">{{ $key->name }}</td>
-                    <td><code class="text-sm">{{ $key->key_prefix }}...</code></td>
-                    <td><span class="badge badge-ghost badge-sm">{{ $key->permission }}</span></td>
-                    <td class="text-sm text-base-content/60">{{ $key->last_used_at?->diffForHumans() ?? 'Nooit' }}</td>
-                    <td class="text-sm text-base-content/60">{{ $key->created_at->format('d M Y') }}</td>
-                    <td>
-                        <form method="POST" action="/admin/api-keys/{{ $key->id }}" onsubmit="return confirm('Weet je zeker dat je deze key wilt verwijderen?')">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-ghost btn-xs text-error">Verwijder</button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="6" class="text-center text-base-content/40 py-8">Nog geen API keys</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+<div class="card">
+    <table class="w-full">
+        <thead>
+            <tr class="border-b border-gray-100">
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Name</th>
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Key</th>
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Permission</th>
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Last used</th>
+                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Created</th>
+                <th class="px-5 py-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($apiKeys as $key)
+            <tr class="border-b border-gray-50 hover:bg-gray-50">
+                <td class="px-5 py-3 text-sm font-medium text-gray-900">{{ $key->name }}</td>
+                <td class="px-5 py-3"><code class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{{ $key->key_prefix }}...</code></td>
+                <td class="px-5 py-3">
+                    <span class="text-xs px-2 py-0.5 rounded-full {{ $key->permission === 'full_access' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600' }}">{{ str_replace('_', ' ', ucfirst($key->permission)) }}</span>
+                </td>
+                <td class="px-5 py-3 text-sm text-gray-400">{{ $key->last_used_at?->diffForHumans() ?? 'Never' }}</td>
+                <td class="px-5 py-3 text-sm text-gray-400">{{ $key->created_at->format('M d, Y') }}</td>
+                <td class="px-5 py-3 text-right">
+                    <form method="POST" action="/admin/api-keys/{{ $key->id }}" onsubmit="return confirm('Delete this API key?')">
+                        @csrf @method('DELETE')
+                        <button class="text-red-400 hover:text-red-600 text-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            @empty
+            <tr><td colspan="6" class="px-5 py-12 text-center text-gray-400">No API keys yet. Create one to get started.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 
-<dialog id="create-key" class="modal">
-    <div class="modal-box">
-        <h3 class="text-lg font-bold">Nieuwe API Key</h3>
-        <form method="POST" action="/admin/api-keys" class="mt-4">
-            @csrf
-            <fieldset class="fieldset">
-                <label class="fieldset-label">Naam</label>
-                <input type="text" name="name" class="input input-bordered w-full" placeholder="bijv. Production" required>
-            </fieldset>
-            <fieldset class="fieldset mt-3">
-                <label class="fieldset-label">Rechten</label>
-                <select name="permission" class="select select-bordered w-full">
-                    <option value="full_access">Volledige toegang</option>
-                    <option value="sending_access">Alleen verzenden</option>
-                </select>
-            </fieldset>
-            <div class="modal-action">
-                <button type="button" class="btn" onclick="document.getElementById('create-key').close()">Annuleer</button>
-                <button type="submit" class="btn btn-primary">Aanmaken</button>
+<dialog id="create-key" class="rounded-xl shadow-xl border-0 p-0 max-w-md w-full backdrop:bg-black/30">
+    <form method="POST" action="/admin/api-keys" class="p-6">
+        @csrf
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">New API Key</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" name="name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="e.g. Production" required>
             </div>
-        </form>
-    </div>
-    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Permission</label>
+                <select name="permission" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <option value="full_access">Full access</option>
+                    <option value="sending_access">Sending only</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+            <button type="button" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800" onclick="document.getElementById('create-key').close()">Cancel</button>
+            <button type="submit" class="btn-green">Create key</button>
+        </div>
+    </form>
 </dialog>
 @endsection
