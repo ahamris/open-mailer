@@ -24,7 +24,7 @@
 
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">Subject</label>
-                <input type="text" name="subject" class="form-input" value="{{ old('subject', $template->subject ?? '') }}" required placeholder="e.g. Your monthly update from {{company}}">
+                <input type="text" name="subject" class="form-input" value="{{ old('subject', $template->subject ?? '') }}" required placeholder="e.g. Your monthly update from @{{company}}">
                 @error('subject')<p class="form-hint" style="color:var(--r500);">{{ $message }}</p>@enderror
             </div>
         </div>
@@ -34,12 +34,12 @@
         <div class="card__header" style="display:flex;align-items:center;justify-content:space-between;">
             <span class="card__header-title">HTML Body</span>
             <div style="display:flex;gap:.25rem;flex-wrap:wrap;" id="shortcode-buttons">
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{contact.first_name}}" title="Insert first name">First Name</button>
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{contact.last_name}}" title="Insert last name">Last Name</button>
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{contact.email}}" title="Insert email">Email</button>
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{contact.full_name}}" title="Insert full name">Full Name</button>
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{date}}" title="Insert current date">Date</button>
-                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="{{company}}" title="Insert company name">Company</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{contact.first_name}}" title="Insert first name">First Name</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{contact.last_name}}" title="Insert last name">Last Name</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{contact.email}}" title="Insert email">Email</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{contact.full_name}}" title="Insert full name">Full Name</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{date}}" title="Insert current date">Date</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-shortcode="@{{company}}" title="Insert company name">Company</button>
             </div>
         </div>
         <div class="card__body" style="padding:0;">
