@@ -1,204 +1,227 @@
 @extends('layouts.admin')
 @section('title', 'Admin Guide')
+@section('subtitle', 'Learn how to use CLOM effectively')
 
 @section('content')
-<h2 class="text-2xl font-bold mb-6">Admin Guide</h2>
+<div style="display:grid;grid-template-columns:14rem 1fr;gap:1.5rem;align-items:start;">
 
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- TOC -->
-    <div class="lg:col-span-1">
-        <ul class="menu bg-base-100 rounded-box shadow w-full">
-            <li class="menu-title">Inhoudsopgave</li>
-            <li><a href="#overzicht">Overzicht</a></li>
-            <li><a href="#mail-client">Mail Client</a></li>
-            <li><a href="#workflows">Workflows</a></li>
-            <li><a href="#ai-assistent">AI Assistent</a></li>
-            <li><a href="#domeinen">Domeinen instellen</a></li>
-            <li><a href="#api-keys-guide">API Keys beheren</a></li>
-            <li><a href="#smtp-server">SMTP Server</a></li>
-            <li><a href="#troubleshooting">Troubleshooting</a></li>
-        </ul>
+    {{-- Table of Contents --}}
+    <div class="card" style="position:sticky;top:5rem;">
+        <div class="card__body" style="padding:.75rem;">
+            <p class="text-xs font-semibold" style="color:var(--text-tertiary);text-transform:uppercase;margin-bottom:.5rem;">Contents</p>
+            <nav style="display:flex;flex-direction:column;gap:.125rem;">
+                <a href="#overview" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Overview</a>
+                <a href="#mail-client" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Mail Client</a>
+                <a href="#workflows" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Workflows</a>
+                <a href="#ai-assistant" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">AI Assistant</a>
+                <a href="#domains" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Domains</a>
+                <a href="#smtp-server" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">SMTP Server</a>
+                <a href="#troubleshooting" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Troubleshooting</a>
+            </nav>
+        </div>
     </div>
 
-    <!-- Content -->
-    <div class="lg:col-span-3 space-y-6">
+    {{-- Content --}}
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
 
-        <div id="overzicht" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Overzicht</h3>
-            <p>CLOM (CodeLabs Open Mailer) is een self-hosted, Resend-compatible email platform. Het biedt:</p>
-            <ul class="list-disc list-inside mt-2 space-y-1">
-                <li><strong>REST API</strong> — Stuur e-mails vanuit elke applicatie</li>
-                <li><strong>Mail Client</strong> — Webmail interface met inbox, verzenden en zoeken</li>
-                <li><strong>AI Assistent</strong> — Claude-aangedreven hulp bij schrijven en antwoorden</li>
-                <li><strong>Workflows</strong> — Automatiseer acties op inkomende e-mails</li>
-                <li><strong>Inbound SMTP</strong> — Ontvang e-mails direct op je server</li>
-                <li><strong>DNS Verificatie</strong> — SPF, DKIM, DMARC controle</li>
-            </ul>
+        {{-- Overview --}}
+        <div id="overview" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Overview</span>
+            </div>
+            <div class="card__body">
+                <p>CLOM (CodeLabs Open Mailer) is a self-hosted, Resend-compatible email platform. It provides:</p>
+                <ul style="list-style:disc;padding-left:1.25rem;margin-top:.75rem;display:flex;flex-direction:column;gap:.375rem;">
+                    <li><strong>REST API</strong> &mdash; Send emails from any application</li>
+                    <li><strong>Mail Client</strong> &mdash; Webmail interface with inbox, compose, and search</li>
+                    <li><strong>AI Assistant</strong> &mdash; AI-powered writing and reply suggestions</li>
+                    <li><strong>Workflows</strong> &mdash; Automate actions on incoming emails</li>
+                    <li><strong>Inbound SMTP</strong> &mdash; Receive emails directly on your server</li>
+                    <li><strong>DNS Verification</strong> &mdash; SPF, DKIM, DMARC validation</li>
+                </ul>
+            </div>
         </div>
 
-        <div id="mail-client" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Mail Client</h3>
-            <p class="mb-3">De ingebouwde mail client biedt een volwaardige webmail-ervaring:</p>
+        {{-- Mail Client --}}
+        <div id="mail-client" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Mail Client</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:1rem;">The built-in mail client provides a full webmail experience:</p>
 
-            <div class="space-y-3">
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" checked />
-                    <div class="collapse-title font-medium">Inbox & Mappen</div>
-                    <div class="collapse-content">
-                        <ul class="list-disc list-inside space-y-1 text-sm">
-                            <li>Ga naar <strong>Mail Client > Inbox</strong> in het menu</li>
-                            <li>Gebruik de mappen-sidebar: Inbox, Verzonden, Met ster, Concepten, Prullenbak</li>
-                            <li>Klik op een e-mail om deze te openen en te lezen</li>
-                            <li>Ongelezen berichten worden vetgedrukt weergegeven</li>
-                            <li>Gebruik de zoekbalk om te zoeken op onderwerp, afzender of inhoud</li>
-                        </ul>
-                    </div>
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">Inbox &amp; Folders</h4>
+                <ul style="list-style:disc;padding-left:1.25rem;margin-bottom:1rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                    <li>Navigate to <strong>Mail Client &gt; Inbox</strong> in the sidebar</li>
+                    <li>Use the folder sidebar: Inbox, Sent, Starred, Drafts, Trash</li>
+                    <li>Click an email to open and read it</li>
+                    <li>Unread messages are displayed in bold</li>
+                    <li>Use the search bar to search by subject, sender, or content</li>
+                </ul>
+
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">Composing Emails</h4>
+                <ul style="list-style:disc;padding-left:1.25rem;margin-bottom:1rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                    <li>Click <strong>"Compose"</strong> in the sidebar</li>
+                    <li>Fill in From, To, CC (optional), Subject, and message</li>
+                    <li>Use the <strong>AI Assistant</strong> panel for writing help</li>
+                    <li>Click <strong>"Send"</strong> &mdash; the email is queued for delivery</li>
+                </ul>
+
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">Replying</h4>
+                <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                    <li>Open a received email and click <strong>"Reply"</strong></li>
+                    <li>The original message is automatically quoted</li>
+                    <li>Use AI quick actions: "Professional reply", "Confirmation", etc.</li>
+                    <li>Or describe what you want to say and let AI draft it for you</li>
+                </ul>
+            </div>
+        </div>
+
+        {{-- Workflows --}}
+        <div id="workflows" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Workflows</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:1rem;">Workflows automate actions on incoming emails based on trigger conditions.</p>
+
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">Triggers (Conditions)</h4>
+                <div style="overflow-x:auto;margin-bottom:1.25rem;">
+                    <table class="tbl">
+                        <thead>
+                            <tr><th>Field</th><th>Operators</th><th>Example</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>From (sender)</td><td>contains, equals, ends with</td><td><code>ends with @government.nl</code></td></tr>
+                            <tr><td>To (recipient)</td><td>contains, equals</td><td><code>equals support@code-labs.nl</code></td></tr>
+                            <tr><td>Subject</td><td>contains, starts with, regex</td><td><code>contains "invoice"</code></td></tr>
+                            <tr><td>Body</td><td>contains, regex</td><td><code>contains "urgent"</code></td></tr>
+                            <tr><td>Has attachment</td><td>is true / is false</td><td><code>is true</code></td></tr>
+                            <tr><td>SPF / DKIM</td><td>equals</td><td><code>equals "pass"</code></td></tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" />
-                    <div class="collapse-title font-medium">E-mail opstellen</div>
-                    <div class="collapse-content">
-                        <ul class="list-disc list-inside space-y-1 text-sm">
-                            <li>Klik op <strong>"+ Nieuwe mail"</strong> of ga naar <strong>Opstellen</strong></li>
-                            <li>Vul Van, Aan, CC (optioneel), Onderwerp en bericht in</li>
-                            <li>Gebruik de <strong>AI Assistent</strong> rechts om hulp te krijgen bij het schrijven</li>
-                            <li>Klik <strong>"Verstuur"</strong> — de mail gaat via de queue naar Kerio Connect</li>
-                        </ul>
-                    </div>
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">Actions</h4>
+                <div style="overflow-x:auto;">
+                    <table class="tbl">
+                        <thead>
+                            <tr><th>Action</th><th>Description</th><th>Parameters</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="badge badge--info">auto_reply</span></td><td>Send automatic reply</td><td>HTML template</td></tr>
+                            <tr><td><span class="badge badge--info">ai_reply</span></td><td>Let AI generate a reply</td><td>Instructions + auto_send</td></tr>
+                            <tr><td><span class="badge badge--info">forward</span></td><td>Forward to another address</td><td>Email address</td></tr>
+                            <tr><td><span class="badge badge--info">label</span></td><td>Move to folder</td><td>Folder name</td></tr>
+                            <tr><td><span class="badge badge--info">webhook</span></td><td>HTTP POST to external URL</td><td>URL</td></tr>
+                            <tr><td><span class="badge badge--info">mark_read</span></td><td>Mark as read</td><td>&mdash;</td></tr>
+                            <tr><td><span class="badge badge--info">star</span></td><td>Add star</td><td>&mdash;</td></tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" />
-                    <div class="collapse-title font-medium">Beantwoorden</div>
-                    <div class="collapse-content">
-                        <ul class="list-disc list-inside space-y-1 text-sm">
-                            <li>Open een ontvangen e-mail en klik <strong>"Beantwoord"</strong></li>
-                            <li>De originele mail wordt automatisch geciteerd</li>
-                            <li>Gebruik AI-snelknoppen: "Professioneel antwoord", "Bevestiging", etc.</li>
-                            <li>Of beschrijf in eigen woorden wat je wilt zeggen en laat AI het uitwerken</li>
-                        </ul>
-                    </div>
+                <div class="alert alert--info" style="margin-top:1rem;margin-bottom:0;">
+                    <strong>Tip:</strong> Workflows use AND logic for triggers. All conditions must match. Create multiple workflows for OR logic.
                 </div>
             </div>
         </div>
 
-        <div id="workflows" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Workflows</h3>
-            <p class="mb-3">Workflows automatiseren acties op inkomende e-mails.</p>
-
-            <h4 class="font-semibold mt-4 mb-2">Triggers (Condities)</h4>
-            <table class="table table-sm">
-                <thead><tr><th>Veld</th><th>Operators</th><th>Voorbeeld</th></tr></thead>
-                <tbody>
-                    <tr><td>Van (afzender)</td><td>bevat, is gelijk aan, eindigt met</td><td><code>eindigt met @overheid.nl</code></td></tr>
-                    <tr><td>Aan (ontvanger)</td><td>bevat, is gelijk aan</td><td><code>is gelijk aan support@code-labs.nl</code></td></tr>
-                    <tr><td>Onderwerp</td><td>bevat, begint met, regex</td><td><code>bevat "factuur"</code></td></tr>
-                    <tr><td>Inhoud</td><td>bevat, regex</td><td><code>bevat "urgent"</code></td></tr>
-                    <tr><td>Heeft bijlage</td><td>is waar/onwaar</td><td><code>is waar</code></td></tr>
-                    <tr><td>SPF/DKIM</td><td>is gelijk aan</td><td><code>is gelijk aan "pass"</code></td></tr>
-                </tbody>
-            </table>
-
-            <h4 class="font-semibold mt-4 mb-2">Acties</h4>
-            <table class="table table-sm">
-                <thead><tr><th>Actie</th><th>Beschrijving</th><th>Parameters</th></tr></thead>
-                <tbody>
-                    <tr><td><span class="badge badge-primary badge-sm">auto_reply</span></td><td>Stuur automatisch antwoord</td><td>HTML template</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">ai_reply</span></td><td>Laat AI een antwoord genereren</td><td>Instructies + auto_send</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">forward</span></td><td>Stuur door naar ander adres</td><td>E-mailadres</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">label</span></td><td>Verplaats naar map</td><td>Mapnaam</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">webhook</span></td><td>HTTP POST naar externe URL</td><td>URL</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">mark_read</span></td><td>Markeer als gelezen</td><td>-</td></tr>
-                    <tr><td><span class="badge badge-primary badge-sm">star</span></td><td>Voeg ster toe</td><td>-</td></tr>
-                </tbody>
-            </table>
-
-            <div class="alert alert-info mt-4">
-                <span><strong>Tip:</strong> Workflows gebruiken AND-logica voor triggers. Alle condities moeten matchen. Maak meerdere workflows voor OR-logica.</span>
+        {{-- AI Assistant --}}
+        <div id="ai-assistant" class="card">
+            <div class="card__header">
+                <span class="card__header-title">AI Assistant</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">CLOM integrates with AI providers for smart email features:</p>
+                <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.375rem;">
+                    <li><strong>Summarize</strong> &mdash; Open an email and click "AI Summary"</li>
+                    <li><strong>Compose</strong> &mdash; Describe what you want to say, AI writes it out</li>
+                    <li><strong>Reply</strong> &mdash; AI reads the original email and suggests a reply</li>
+                    <li><strong>Workflow AI Reply</strong> &mdash; Automatic AI-generated replies on incoming mail</li>
+                </ul>
+                <div class="alert alert--warning" style="margin-top:1rem;margin-bottom:0;">
+                    Configure your AI provider via <a href="/admin/ai-settings" class="text-link font-semibold">Settings &gt; AI Settings</a>. Supported: Anthropic, OpenAI, Google Gemini, Ollama.
+                </div>
             </div>
         </div>
 
-        <div id="ai-assistent" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">AI Assistent</h3>
-            <p class="mb-3">CLOM integreert met Claude (Anthropic) voor slimme e-mailfuncties:</p>
-            <ul class="list-disc list-inside space-y-1">
-                <li><strong>Samenvatten</strong> — Open een e-mail en klik "AI Samenvatting"</li>
-                <li><strong>Opstellen</strong> — Beschrijf wat je wilt zeggen, AI schrijft het uit</li>
-                <li><strong>Beantwoorden</strong> — AI leest de originele mail en stelt een antwoord voor</li>
-                <li><strong>Workflow AI Reply</strong> — Automatisch AI-gegenereerde antwoorden op inkomende mail</li>
-            </ul>
-            <div class="alert alert-warning mt-4">
-                <span>Stel je Anthropic API key in via <code>.env</code>: <code>ANTHROPIC_API_KEY=sk-ant-xxx</code></span>
+        {{-- Domains --}}
+        <div id="domains" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Domains</span>
+            </div>
+            <div class="card__body">
+                <ol style="list-style:decimal;padding-left:1.25rem;display:flex;flex-direction:column;gap:.5rem;">
+                    <li>Go to <strong>Settings &gt; Domains</strong></li>
+                    <li>Click <strong>"+ Add Domain"</strong> and enter your domain name</li>
+                    <li>CLOM generates the required DNS records (SPF, DKIM, DMARC, MX)</li>
+                    <li>Add these records at your DNS provider (e.g. TransIP, Cloudflare)</li>
+                    <li>Click <strong>"Verify DNS"</strong> to check the records</li>
+                    <li>Green badges = correctly configured</li>
+                </ol>
             </div>
         </div>
 
-        <div id="domeinen" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Domeinen instellen</h3>
-            <ol class="list-decimal list-inside space-y-2">
-                <li>Ga naar <strong>Beheer > Domeinen</strong></li>
-                <li>Klik <strong>"+ Domein toevoegen"</strong> en voer je domeinnaam in</li>
-                <li>CLOM genereert de benodigde DNS-records (SPF, DKIM, DMARC, MX)</li>
-                <li>Voeg deze records toe bij je DNS-provider (bijv. TransIP, Cloudflare)</li>
-                <li>Klik <strong>"Verifieer DNS"</strong> om de records te controleren</li>
-                <li>Groene badges = correct geconfigureerd</li>
-            </ol>
-        </div>
-
-        <div id="smtp-server" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">SMTP Server</h3>
-            <p class="mb-3">CLOM heeft een ingebouwde SMTP-server voor het ontvangen van e-mails:</p>
-            <div class="mockup-code text-sm">
-                <pre data-prefix="$"><code>php artisan smtp:serve --port=25</code></pre>
+        {{-- SMTP Server --}}
+        <div id="smtp-server" class="card">
+            <div class="card__header">
+                <span class="card__header-title">SMTP Server</span>
             </div>
-            <p class="mt-3 text-sm">De SMTP server draait via Supervisor en start automatisch. Inkomende e-mails worden:</p>
-            <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
-                <li>Gevalideerd (SPF + DKIM verificatie)</li>
-                <li>Opgeslagen in de database</li>
-                <li>Verwerkt door actieve workflows</li>
-                <li>Getoond in de Mail Client inbox</li>
-            </ul>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">CLOM has a built-in SMTP server for receiving emails:</p>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;margin-bottom:.75rem;">
+                    $ php artisan smtp:serve --port=25
+                </div>
+                <p class="text-sm" style="margin-bottom:.5rem;">The SMTP server runs via Supervisor and starts automatically. Incoming emails are:</p>
+                <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                    <li>Validated (SPF + DKIM verification)</li>
+                    <li>Stored in the database</li>
+                    <li>Processed by active workflows</li>
+                    <li>Displayed in the Mail Client inbox</li>
+                </ul>
+            </div>
         </div>
 
-        <div id="troubleshooting" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Troubleshooting</h3>
-            <div class="space-y-3">
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" />
-                    <div class="collapse-title font-medium text-sm">Mails worden niet verstuurd</div>
-                    <div class="collapse-content text-sm">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Controleer <code>.env</code> MAIL_* settings</li>
-                            <li>Check of queue workers draaien: <code>supervisorctl status</code></li>
-                            <li>Bekijk failed jobs: <code>php artisan queue:failed</code></li>
-                            <li>Bekijk logs: <code>tail -f storage/logs/laravel.log</code></li>
+        {{-- Troubleshooting --}}
+        <div id="troubleshooting" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Troubleshooting</span>
+            </div>
+            <div class="card__body">
+                <div style="display:flex;flex-direction:column;gap:1rem;">
+
+                    <div>
+                        <h4 class="font-semibold" style="margin-bottom:.375rem;">Emails are not being sent</h4>
+                        <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                            <li>Check <code>.env</code> MAIL_* settings</li>
+                            <li>Verify queue workers are running: <code>supervisorctl status</code></li>
+                            <li>Check failed jobs: <code>php artisan queue:failed</code></li>
+                            <li>Check logs: <code>tail -f storage/logs/laravel.log</code></li>
                         </ul>
                     </div>
-                </div>
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" />
-                    <div class="collapse-title font-medium text-sm">SMTP server start niet</div>
-                    <div class="collapse-content text-sm">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Port 25 bezet? <code>ss -tlnp | grep :25</code></li>
-                            <li>Postfix uitschakelen: <code>systemctl stop postfix</code></li>
+
+                    <div>
+                        <h4 class="font-semibold" style="margin-bottom:.375rem;">SMTP server won't start</h4>
+                        <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                            <li>Port 25 in use? <code>ss -tlnp | grep :25</code></li>
+                            <li>Disable Postfix: <code>systemctl stop postfix</code></li>
                             <li>Supervisor logs: <code>cat /var/log/clom-smtp.log</code></li>
                         </ul>
                     </div>
-                </div>
-                <div class="collapse collapse-arrow bg-base-200">
-                    <input type="checkbox" />
-                    <div class="collapse-title font-medium text-sm">AI Assistent werkt niet</div>
-                    <div class="collapse-content text-sm">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Stel <code>ANTHROPIC_API_KEY</code> in in <code>.env</code></li>
-                            <li>Controleer of de API key geldig is</li>
-                            <li>Check <code>config/services.php</code> voor de juiste configuratie</li>
+
+                    <div>
+                        <h4 class="font-semibold" style="margin-bottom:.375rem;">AI Assistant not working</h4>
+                        <ul style="list-style:disc;padding-left:1.25rem;display:flex;flex-direction:column;gap:.25rem;" class="text-sm">
+                            <li>Configure your AI provider in <a href="/admin/ai-settings" class="text-link">AI Settings</a></li>
+                            <li>Verify the API key is valid</li>
+                            <li>Check <code>config/services.php</code> for correct configuration</li>
                         </ul>
                     </div>
+
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 @endsection

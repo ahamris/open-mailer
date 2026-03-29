@@ -1,62 +1,71 @@
 @extends('layouts.admin')
-@section('title', $workflow ? 'Edit workflow' : 'New workflow')
+@section('title', $workflow ? 'Edit Workflow' : 'New Workflow')
+@section('subtitle', $workflow ? 'Modify triggers and actions' : 'Create an automated email workflow')
+
+@section('actions')
+<a href="/admin/workflows" class="btn btn--ghost btn--sm">&larr; Back to Workflows</a>
+@endsection
 
 @section('content')
-<div class="mb-4">
-    <a href="/admin/workflows" class="btn btn--ghost btn--sm">&larr; Terug</a>
-</div>
-
-<form method="POST" action="{{ $workflow ? '/admin/workflows/' . $workflow->id : '/admin/workflows' }}" class="max-w-4xl">
+<form method="POST" action="{{ $workflow ? '/admin/workflows/' . $workflow->id : '/admin/workflows' }}" id="workflow-form" style="max-width:52rem;">
     @csrf
     @if($workflow) @method('PUT') @endif
 
-    <div class="bg-base-100 rounded-box shadow p-5 space-y-4">
-        <h2 class="card__header-title">{{ $workflow ? 'Edit workflow' : 'New workflow' }}</h2>
-
-        <fieldset class="fieldset">
-            <label class="fieldset-label">Naam</label>
-            <input type="text" name="name" class="input input-bordered w-full" value="{{ $workflow->name ?? '' }}" required>
-        </fieldset>
-
-        <fieldset class="fieldset">
-            <label class="fieldset-label">Beschrijving</label>
-            <input type="text" name="description" class="input input-bordered w-full" value="{{ $workflow->description ?? '' }}">
-        </fieldset>
-
-        <fieldset class="fieldset">
-            <label class="fieldset-label">Prioriteit (hoger = eerder uitgevoerd)</label>
-            <input type="number" name="priority" class="input input-bordered w-32" value="{{ $workflow->priority ?? 0 }}" min="0" max="100">
-        </fieldset>
-
-        <!-- Triggers -->
-        <div class="border border-base-300 rounded-box p-4">
-            <h3 class="font-semibold mb-2">Triggers (ALS...)</h3>
-            <p class="text-sm text-base-content/60 mb-3">Alle condities moeten matchen (AND logica)</p>
-            <div id="triggers-container">
-                <!-- Dynamisch gevuld -->
-            </div>
-            <button type="button" class="btn btn--ghost btn--sm mt-2" onclick="addTrigger()">+ Trigger toevoegen</button>
-            <textarea name="triggers" id="triggers-json" class="hidden"></textarea>
+    {{-- Basic Info --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card__header">
+            <span class="card__header-title">Basic Information</span>
         </div>
-
-        <!-- Actions -->
-        <div class="border border-base-300 rounded-box p-4">
-            <h3 class="font-semibold mb-2">Acties (DAN...)</h3>
-            <p class="text-sm text-base-content/60 mb-3">Worden sequentieel uitgevoerd</p>
-            <div id="actions-container">
-                <!-- Dynamisch gevuld -->
+        <div class="card__body">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-input" value="{{ $workflow->name ?? '' }}" required placeholder="e.g. Auto-reply to support emails">
             </div>
-            <button type="button" class="btn btn--ghost btn--sm mt-2" onclick="addAction()">+ Actie toevoegen</button>
-            <textarea name="actions" id="actions-json" class="hidden"></textarea>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <input type="text" name="description" class="form-input" value="{{ $workflow->description ?? '' }}" placeholder="Optional description of what this workflow does">
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Priority (higher = runs first)</label>
+                <input type="number" name="priority" class="form-input" style="width:8rem;" value="{{ $workflow->priority ?? 0 }}" min="0" max="100">
+            </div>
         </div>
     </div>
 
-    <div class="mt-4 flex gap-2">
-        <button type="submit" class="btn btn--primary" onclick="serializeForm()">Save</button>
+    {{-- Triggers --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card__header">
+            <span class="card__header-title">Triggers (IF...)</span>
+        </div>
+        <div class="card__body">
+            <p class="text-sm text-muted" style="margin-bottom:.75rem;">All conditions must match (AND logic)</p>
+            <div id="triggers-container"></div>
+            <button type="button" class="btn btn--ghost btn--sm" onclick="addTrigger()" style="margin-top:.5rem;">+ Add Trigger</button>
+            <textarea name="triggers" id="triggers-json" style="display:none;"></textarea>
+        </div>
+    </div>
+
+    {{-- Actions --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card__header">
+            <span class="card__header-title">Actions (THEN...)</span>
+        </div>
+        <div class="card__body">
+            <p class="text-sm text-muted" style="margin-bottom:.75rem;">Actions are executed sequentially</p>
+            <div id="actions-container"></div>
+            <button type="button" class="btn btn--ghost btn--sm" onclick="addAction()" style="margin-top:.5rem;">+ Add Action</button>
+            <textarea name="actions" id="actions-json" style="display:none;"></textarea>
+        </div>
+    </div>
+
+    {{-- Submit --}}
+    <div style="display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn--primary">Save Workflow</button>
         <a href="/admin/workflows" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
-
 @endsection
 
 @section('scripts')
@@ -65,33 +74,33 @@ const existingTriggers = @json($workflow->triggers ?? []);
 const existingActions = @json($workflow->actions ?? []);
 
 const triggerFields = [
-    {value: 'from', label: 'Van (afzender)'},
-    {value: 'to', label: 'Aan (ontvanger)'},
-    {value: 'subject', label: 'Onderwerp'},
-    {value: 'body', label: 'Inhoud'},
-    {value: 'has_attachment', label: 'Heeft bijlage'},
-    {value: 'spf', label: 'SPF resultaat'},
-    {value: 'dkim', label: 'DKIM resultaat'},
+    {value: 'from', label: 'From (sender)'},
+    {value: 'to', label: 'To (recipient)'},
+    {value: 'subject', label: 'Subject'},
+    {value: 'body', label: 'Body'},
+    {value: 'has_attachment', label: 'Has attachment'},
+    {value: 'spf', label: 'SPF result'},
+    {value: 'dkim', label: 'DKIM result'},
 ];
 
 const operators = [
-    {value: 'contains', label: 'bevat'},
-    {value: 'equals', label: 'is gelijk aan'},
-    {value: 'starts_with', label: 'begint met'},
-    {value: 'ends_with', label: 'eindigt met'},
+    {value: 'contains', label: 'contains'},
+    {value: 'equals', label: 'equals'},
+    {value: 'starts_with', label: 'starts with'},
+    {value: 'ends_with', label: 'ends with'},
     {value: 'regex', label: 'regex match'},
-    {value: 'is_true', label: 'is waar'},
-    {value: 'is_false', label: 'is onwaar'},
+    {value: 'is_true', label: 'is true'},
+    {value: 'is_false', label: 'is false'},
 ];
 
 const actionTypes = [
-    {value: 'auto_reply', label: 'Automatisch antwoord', fields: ['template']},
-    {value: 'ai_reply', label: 'AI Antwoord', fields: ['instructions', 'auto_send']},
-    {value: 'forward', label: 'Doorsturen', fields: ['to']},
-    {value: 'label', label: 'Label / Map', fields: ['folder']},
-    {value: 'move', label: 'Verplaatsen', fields: ['folder']},
-    {value: 'mark_read', label: 'Markeer als gelezen', fields: []},
-    {value: 'star', label: 'Ster toevoegen', fields: []},
+    {value: 'auto_reply', label: 'Auto Reply', fields: ['template']},
+    {value: 'ai_reply', label: 'AI Reply', fields: ['instructions', 'auto_send']},
+    {value: 'forward', label: 'Forward', fields: ['to']},
+    {value: 'label', label: 'Label / Folder', fields: ['folder']},
+    {value: 'move', label: 'Move to Folder', fields: ['folder']},
+    {value: 'mark_read', label: 'Mark as Read', fields: []},
+    {value: 'star', label: 'Star', fields: []},
     {value: 'webhook', label: 'Webhook', fields: ['url']},
 ];
 
@@ -102,16 +111,16 @@ function addTrigger(data = {}) {
     const i = triggerCount++;
     const container = document.getElementById('triggers-container');
     const div = document.createElement('div');
-    div.className = 'flex gap-2 mb-2 items-center';
+    div.style.cssText = 'display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center;';
     div.innerHTML = `
-        <select data-trigger="${i}" data-key="field" class="select select-bordered select-sm w-40">
+        <select data-trigger="${i}" data-key="field" class="form-select" style="width:10rem;">
             ${triggerFields.map(f => `<option value="${f.value}" ${data.field === f.value ? 'selected' : ''}>${f.label}</option>`).join('')}
         </select>
-        <select data-trigger="${i}" data-key="operator" class="select select-bordered select-sm w-36">
+        <select data-trigger="${i}" data-key="operator" class="form-select" style="width:9rem;">
             ${operators.map(o => `<option value="${o.value}" ${data.operator === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}
         </select>
-        <input data-trigger="${i}" data-key="value" class="input input-bordered input-sm flex-1" value="${data.value || ''}" placeholder="waarde">
-        <button type="button" class="btn btn--ghost btn--sm text-error" onclick="this.parentElement.remove()">X</button>
+        <input data-trigger="${i}" data-key="value" class="form-input" style="flex:1;" value="${data.value || ''}" placeholder="Value">
+        <button type="button" class="btn btn--ghost-danger btn--sm" onclick="this.parentElement.remove()">X</button>
     `;
     container.appendChild(div);
 }
@@ -120,14 +129,14 @@ function addAction(data = {}) {
     const i = actionCount++;
     const container = document.getElementById('actions-container');
     const div = document.createElement('div');
-    div.className = 'flex gap-2 mb-2 items-start flex-wrap';
+    div.style.cssText = 'display:flex;gap:.5rem;margin-bottom:.5rem;align-items:start;flex-wrap:wrap;';
     div.id = `action-${i}`;
     div.innerHTML = `
-        <select data-action="${i}" data-key="type" class="select select-bordered select-sm w-44" onchange="updateActionFields(${i}, this.value)">
+        <select data-action="${i}" data-key="type" class="form-select" style="width:11rem;" onchange="updateActionFields(${i}, this.value)">
             ${actionTypes.map(a => `<option value="${a.value}" ${data.type === a.value ? 'selected' : ''}>${a.label}</option>`).join('')}
         </select>
-        <div id="action-fields-${i}" class="flex-1 flex gap-2 flex-wrap"></div>
-        <button type="button" class="btn btn--ghost btn--sm text-error" onclick="this.parentElement.remove()">X</button>
+        <div id="action-fields-${i}" style="flex:1;display:flex;gap:.5rem;flex-wrap:wrap;"></div>
+        <button type="button" class="btn btn--ghost-danger btn--sm" onclick="this.parentElement.remove()">X</button>
     `;
     container.appendChild(div);
     updateActionFields(i, data.type || 'auto_reply', data);
@@ -139,15 +148,15 @@ function updateActionFields(i, type, data = {}) {
     container.innerHTML = '';
     (actionDef?.fields || []).forEach(field => {
         if (field === 'auto_send') {
-            container.innerHTML += `<label class="flex items-center gap-2 text-sm"><input type="checkbox" data-action="${i}" data-key="auto_send" class="checkbox checkbox-sm" ${data.auto_send ? 'checked' : ''}> Auto verzenden</label>`;
+            container.innerHTML += `<label style="display:flex;align-items:center;gap:.375rem;font-size:.8125rem;"><input type="checkbox" data-action="${i}" data-key="auto_send" ${data.auto_send ? 'checked' : ''}> Auto send</label>`;
         } else {
-            container.innerHTML += `<input data-action="${i}" data-key="${field}" class="input input-bordered input-sm flex-1" value="${data[field] || ''}" placeholder="${field}">`;
+            const placeholder = {template: 'HTML template', instructions: 'AI instructions', to: 'Email address', folder: 'Folder name', url: 'Webhook URL'}[field] || field;
+            container.innerHTML += `<input data-action="${i}" data-key="${field}" class="form-input" style="flex:1;min-width:10rem;" value="${data[field] || ''}" placeholder="${placeholder}">`;
         }
     });
 }
 
 function serializeForm() {
-    // Serialize triggers
     const triggers = [];
     document.querySelectorAll('[data-trigger]').forEach(el => {
         const idx = el.dataset.trigger;
@@ -156,7 +165,6 @@ function serializeForm() {
     });
     document.getElementById('triggers-json').value = JSON.stringify(triggers.filter(Boolean));
 
-    // Serialize actions
     const actions = [];
     document.querySelectorAll('[data-action]').forEach(el => {
         const idx = el.dataset.action;
@@ -170,7 +178,11 @@ function serializeForm() {
     document.getElementById('actions-json').value = JSON.stringify(actions.filter(Boolean));
 }
 
-// Init existing data
+document.getElementById('workflow-form').addEventListener('submit', function(e) {
+    serializeForm();
+});
+
+// Initialize existing data
 existingTriggers.forEach(t => addTrigger(t));
 existingActions.forEach(a => addAction(a));
 if (existingTriggers.length === 0) addTrigger();

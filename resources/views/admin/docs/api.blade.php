@@ -1,143 +1,170 @@
 @extends('layouts.admin')
-@section('title', 'API Documentatie')
+@section('title', 'API Reference')
+@section('subtitle', 'Resend-compatible REST API for sending and receiving email')
+
+@section('actions')
+<a href="/admin/docs/swagger" target="_blank" class="btn btn--primary btn--sm">Open Swagger UI &nearr;</a>
+@endsection
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-bold">API Documentatie</h2>
-    <a href="/admin/docs/swagger" target="_blank" class="btn btn-primary btn--sm">Open Swagger UI &nearr;</a>
-</div>
+<div style="display:grid;grid-template-columns:14rem 1fr;gap:1.5rem;align-items:start;">
 
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- Sidebar nav -->
-    <div class="lg:col-span-1">
-        <ul class="menu bg-base-100 rounded-box shadow w-full">
-            <li class="menu-title">Aan de slag</li>
-            <li><a href="#authenticatie">Authenticatie</a></li>
-            <li><a href="#rate-limiting">Rate Limiting</a></li>
-            <li><a href="#fouten">Foutafhandeling</a></li>
-            <li class="menu-title mt-2">Endpoints</li>
-            <li><a href="#send-email">POST /emails</a></li>
-            <li><a href="#send-batch">POST /emails/batch</a></li>
-            <li><a href="#get-emails">GET /emails</a></li>
-            <li><a href="#get-email">GET /emails/:id</a></li>
-            <li><a href="#domains">Domeinen</a></li>
-            <li><a href="#api-keys">API Keys</a></li>
-            <li class="menu-title mt-2">SDK's</li>
-            <li><a href="#sdk-curl">cURL</a></li>
-            <li><a href="#sdk-php">PHP / Laravel</a></li>
-            <li><a href="#sdk-node">Node.js</a></li>
-            <li><a href="#sdk-python">Python</a></li>
-        </ul>
+    {{-- Sidebar Navigation --}}
+    <div class="card" style="position:sticky;top:5rem;">
+        <div class="card__body" style="padding:.75rem;">
+            <p class="text-xs font-semibold" style="color:var(--text-tertiary);text-transform:uppercase;margin-bottom:.5rem;">Getting Started</p>
+            <nav style="display:flex;flex-direction:column;gap:.125rem;">
+                <a href="#authentication" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Authentication</a>
+                <a href="#rate-limiting" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Rate Limiting</a>
+                <a href="#error-handling" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Error Handling</a>
+            </nav>
+            <p class="text-xs font-semibold" style="color:var(--text-tertiary);text-transform:uppercase;margin:.75rem 0 .5rem;">Endpoints</p>
+            <nav style="display:flex;flex-direction:column;gap:.125rem;">
+                <a href="#send-email" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">POST /emails</a>
+                <a href="#send-batch" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">POST /emails/batch</a>
+                <a href="#get-emails" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">GET /emails</a>
+                <a href="#get-email" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">GET /emails/:id</a>
+            </nav>
+            <p class="text-xs font-semibold" style="color:var(--text-tertiary);text-transform:uppercase;margin:.75rem 0 .5rem;">SDKs</p>
+            <nav style="display:flex;flex-direction:column;gap:.125rem;">
+                <a href="#sdk-curl" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">cURL</a>
+                <a href="#sdk-php" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">PHP / Laravel</a>
+                <a href="#sdk-node" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Node.js</a>
+                <a href="#sdk-python" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Python</a>
+            </nav>
+        </div>
     </div>
 
-    <!-- Content -->
-    <div class="lg:col-span-3 space-y-8">
-        <div class="bg-base-100 rounded-box shadow p-6">
-            <p class="text-lg mb-4">CLOM biedt een <strong>Resend-compatible REST API</strong> voor het verzenden en ontvangen van e-mail. Als je al een Resend-integratie hebt, kun je met minimale aanpassingen overstappen.</p>
-            <div class="alert alert-info"><span>Base URL: <code class="font-bold">http://{{ request()->getHost() }}/api</code></span></div>
-        </div>
+    {{-- Content --}}
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
 
-        <div id="authenticatie" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Authenticatie</h3>
-            <p class="mb-3">Alle API-requests vereisen een Bearer token in de <code>Authorization</code> header:</p>
-            <div class="mockup-code text-sm">
-                <pre data-prefix="$"><code>curl -H "Authorization: Bearer clom_jouw_api_key" \</code></pre>
-                <pre data-prefix=" "><code>     {{ request()->getSchemeAndHttpHost() }}/api/emails</code></pre>
+        {{-- Intro --}}
+        <div class="card">
+            <div class="card__body">
+                <p style="font-size:1rem;margin-bottom:.75rem;">CLOM provides a <strong>Resend-compatible REST API</strong> for sending and receiving email. If you already have a Resend integration, you can switch with minimal changes.</p>
+                <div class="alert alert--info" style="margin-bottom:0;">
+                    Base URL: <code class="font-semibold">{{ request()->getSchemeAndHttpHost() }}/api</code>
+                </div>
             </div>
-            <p class="mt-3 text-sm text-base-content/60">API keys maak je aan via <a href="/admin/api-keys" class="link link-primary">Beheer > API Keys</a> of via de API zelf.</p>
         </div>
 
-        <div id="rate-limiting" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Rate Limiting</h3>
-            <p>Standaard <strong>10 requests per seconde</strong> per API key. Bij overschrijding ontvang je een <code>429</code> response.</p>
-        </div>
-
-        <div id="fouten" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Foutafhandeling</h3>
-            <p class="mb-3">Alle fouten retourneren een JSON-object:</p>
-            <div class="mockup-code text-sm">
-                <pre data-prefix=" "><code>{"statusCode": 401, "message": "Missing API key", "name": "missing_api_key"}</code></pre>
+        {{-- Authentication --}}
+        <div id="authentication" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Authentication</span>
             </div>
-            <table class="table table-sm mt-3">
-                <thead><tr><th>Code</th><th>Betekenis</th></tr></thead>
-                <tbody>
-                    <tr><td><code>401</code></td><td>Ontbrekende API key</td></tr>
-                    <tr><td><code>403</code></td><td>Ongeldige API key</td></tr>
-                    <tr><td><code>404</code></td><td>Resource niet gevonden</td></tr>
-                    <tr><td><code>422</code></td><td>Validatiefout</td></tr>
-                    <tr><td><code>429</code></td><td>Rate limit bereikt</td></tr>
-                </tbody>
-            </table>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">All API requests require a Bearer token in the <code>Authorization</code> header:</p>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;">
+                    curl -H "Authorization: Bearer clom_your_api_key" \<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {{ request()->getSchemeAndHttpHost() }}/api/emails
+                </div>
+                <p class="text-sm text-muted" style="margin-top:.75rem;">
+                    Create API keys via <a href="/admin/api-keys" class="text-link">Settings &gt; API Keys</a> or via the API itself.
+                </p>
+            </div>
         </div>
 
-        <div id="send-email" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-1">POST /emails</h3>
-            <p class="text-sm text-base-content/60 mb-4">Verstuur een e-mail</p>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead><tr><th>Parameter</th><th>Type</th><th>Verplicht</th><th>Beschrijving</th></tr></thead>
+        {{-- Rate Limiting --}}
+        <div id="rate-limiting" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Rate Limiting</span>
+            </div>
+            <div class="card__body">
+                <p>Default limit: <strong>10 requests per second</strong> per API key. Exceeding the limit returns a <code>429</code> response.</p>
+            </div>
+        </div>
+
+        {{-- Error Handling --}}
+        <div id="error-handling" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Error Handling</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">All errors return a JSON object:</p>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;margin-bottom:1rem;">
+                    {"statusCode": 401, "message": "Missing API key", "name": "missing_api_key"}
+                </div>
+                <table class="tbl">
+                    <thead>
+                        <tr><th>Code</th><th>Meaning</th></tr>
+                    </thead>
                     <tbody>
-                        <tr><td><code>from</code></td><td>string</td><td>Ja</td><td>Afzender, bijv. <code>"Naam &lt;email@domein.nl&gt;"</code></td></tr>
-                        <tr><td><code>to</code></td><td>string | string[]</td><td>Ja</td><td>Ontvanger(s), max 50</td></tr>
-                        <tr><td><code>subject</code></td><td>string</td><td>Ja</td><td>Onderwerp</td></tr>
-                        <tr><td><code>html</code></td><td>string</td><td>Nee</td><td>HTML body</td></tr>
-                        <tr><td><code>text</code></td><td>string</td><td>Nee</td><td>Platte tekst (auto-gegenereerd uit HTML)</td></tr>
-                        <tr><td><code>cc</code></td><td>string | string[]</td><td>Nee</td><td>CC-ontvangers</td></tr>
-                        <tr><td><code>bcc</code></td><td>string | string[]</td><td>Nee</td><td>BCC-ontvangers</td></tr>
-                        <tr><td><code>reply_to</code></td><td>string | string[]</td><td>Nee</td><td>Reply-to adres(sen)</td></tr>
-                        <tr><td><code>headers</code></td><td>object</td><td>Nee</td><td>Custom headers</td></tr>
-                        <tr><td><code>tags</code></td><td>array</td><td>Nee</td><td>Metadata tags</td></tr>
-                        <tr><td><code>scheduled_at</code></td><td>datetime</td><td>Nee</td><td>Gepland verzendtijdstip (ISO 8601)</td></tr>
+                        <tr><td><code>401</code></td><td>Missing API key</td></tr>
+                        <tr><td><code>403</code></td><td>Invalid API key</td></tr>
+                        <tr><td><code>404</code></td><td>Resource not found</td></tr>
+                        <tr><td><code>422</code></td><td>Validation error</td></tr>
+                        <tr><td><code>429</code></td><td>Rate limit exceeded</td></tr>
                     </tbody>
                 </table>
             </div>
-            <div class="mockup-code text-sm mt-4">
-                <pre data-prefix="$"><code>curl -X POST {{ request()->getSchemeAndHttpHost() }}/api/emails \</code></pre>
-                <pre data-prefix=" "><code>  -H "Authorization: Bearer clom_xxx" \</code></pre>
-                <pre data-prefix=" "><code>  -H "Content-Type: application/json" \</code></pre>
-                <pre data-prefix=" "><code>  -d '{"from":"CLOM <info@code-labs.nl>","to":"klant@voorbeeld.nl","subject":"Test","html":"<h1>Hallo!</h1>"}'</code></pre>
-            </div>
-            <p class="mt-2 text-sm">Response: <code>{"id": "uuid-van-de-email"}</code></p>
         </div>
 
-        <div id="sdk-curl" class="bg-base-100 rounded-box shadow p-6">
-            <h3 class="text-lg font-bold mb-3">Voorbeelden per taal</h3>
+        {{-- POST /emails --}}
+        <div id="send-email" class="card">
+            <div class="card__header">
+                <span class="card__header-title">POST /emails</span>
+                <span class="badge badge--info">Send Email</span>
+            </div>
+            <div class="card__body">
+                <div style="overflow-x:auto;margin-bottom:1rem;">
+                    <table class="tbl">
+                        <thead>
+                            <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>from</code></td><td>string</td><td>Yes</td><td>Sender, e.g. <code>"Name &lt;email@domain.com&gt;"</code></td></tr>
+                            <tr><td><code>to</code></td><td>string | string[]</td><td>Yes</td><td>Recipient(s), max 50</td></tr>
+                            <tr><td><code>subject</code></td><td>string</td><td>Yes</td><td>Subject line</td></tr>
+                            <tr><td><code>html</code></td><td>string</td><td>No</td><td>HTML body</td></tr>
+                            <tr><td><code>text</code></td><td>string</td><td>No</td><td>Plain text (auto-generated from HTML)</td></tr>
+                            <tr><td><code>cc</code></td><td>string | string[]</td><td>No</td><td>CC recipients</td></tr>
+                            <tr><td><code>bcc</code></td><td>string | string[]</td><td>No</td><td>BCC recipients</td></tr>
+                            <tr><td><code>reply_to</code></td><td>string | string[]</td><td>No</td><td>Reply-to address(es)</td></tr>
+                            <tr><td><code>headers</code></td><td>object</td><td>No</td><td>Custom headers</td></tr>
+                            <tr><td><code>tags</code></td><td>array</td><td>No</td><td>Metadata tags</td></tr>
+                            <tr><td><code>scheduled_at</code></td><td>datetime</td><td>No</td><td>Scheduled send time (ISO 8601)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-muted">Response: <code>{"id": "uuid-of-the-email"}</code></p>
+            </div>
+        </div>
 
-            <div role="tablist" class="tabs tabs-bordered">
-                <input type="radio" name="sdk-tabs" role="tab" class="tab" aria-label="cURL" checked="checked" />
-                <div role="tabpanel" class="tab-content py-4">
-                    <div class="mockup-code text-sm">
-                        <pre><code>curl -X POST {{ request()->getSchemeAndHttpHost() }}/api/emails \
+        {{-- SDK Examples --}}
+        <div id="sdk-curl" class="card">
+            <div class="card__header">
+                <span class="card__header-title">SDK Examples</span>
+            </div>
+            <div class="card__body">
+
+                {{-- cURL --}}
+                <h4 class="font-semibold" style="margin-bottom:.5rem;">cURL</h4>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:1.25rem;white-space:pre;">curl -X POST {{ request()->getSchemeAndHttpHost() }}/api/emails \
   -H "Authorization: Bearer $CLOM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "App <noreply@code-labs.nl>",
-    "to": "gebruiker@voorbeeld.nl",
-    "subject": "Welkom!",
-    "html": "&lt;h1&gt;Welkom bij onze dienst&lt;/h1&gt;"
-  }'</code></pre>
-                    </div>
-                </div>
+    "to": "user@example.com",
+    "subject": "Welcome!",
+    "html": "&lt;h1&gt;Welcome to our service&lt;/h1&gt;"
+  }'</div>
 
-                <input type="radio" name="sdk-tabs" role="tab" class="tab" aria-label="PHP" id="sdk-php" />
-                <div role="tabpanel" class="tab-content py-4">
-                    <div class="mockup-code text-sm">
-                        <pre><code>$response = Http::withToken($apiKey)
+                {{-- PHP --}}
+                <h4 id="sdk-php" class="font-semibold" style="margin-bottom:.5rem;">PHP / Laravel</h4>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:1.25rem;white-space:pre;">$response = Http::withToken($apiKey)
     ->post('{{ request()->getSchemeAndHttpHost() }}/api/emails', [
-        'from' => 'App <noreply@code-labs.nl>',
-        'to'   => 'gebruiker@voorbeeld.nl',
-        'subject' => 'Welkom!',
-        'html' => '<h1>Welkom!</h1>',
+        'from'    => 'App <noreply@code-labs.nl>',
+        'to'      => 'user@example.com',
+        'subject' => 'Welcome!',
+        'html'    => '<h1>Welcome!</h1>',
     ]);
 
-$emailId = $response->json('id');</code></pre>
-                    </div>
-                </div>
+$emailId = $response->json('id');</div>
 
-                <input type="radio" name="sdk-tabs" role="tab" class="tab" aria-label="Node.js" id="sdk-node" />
-                <div role="tabpanel" class="tab-content py-4">
-                    <div class="mockup-code text-sm">
-                        <pre><code>const res = await fetch('{{ request()->getSchemeAndHttpHost() }}/api/emails', {
+                {{-- Node.js --}}
+                <h4 id="sdk-node" class="font-semibold" style="margin-bottom:.5rem;">Node.js</h4>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:1.25rem;white-space:pre;">const res = await fetch('{{ request()->getSchemeAndHttpHost() }}/api/emails', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${apiKey}`,
@@ -145,35 +172,32 @@ $emailId = $response->json('id');</code></pre>
   },
   body: JSON.stringify({
     from: 'App <noreply@code-labs.nl>',
-    to: 'gebruiker@voorbeeld.nl',
-    subject: 'Welkom!',
-    html: '<h1>Welkom!</h1>',
+    to: 'user@example.com',
+    subject: 'Welcome!',
+    html: '<h1>Welcome!</h1>',
   }),
 });
-const { id } = await res.json();</code></pre>
-                    </div>
-                </div>
+const { id } = await res.json();</div>
 
-                <input type="radio" name="sdk-tabs" role="tab" class="tab" aria-label="Python" id="sdk-python" />
-                <div role="tabpanel" class="tab-content py-4">
-                    <div class="mockup-code text-sm">
-                        <pre><code>import requests
+                {{-- Python --}}
+                <h4 id="sdk-python" class="font-semibold" style="margin-bottom:.5rem;">Python</h4>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:0;white-space:pre;">import requests
 
 response = requests.post(
     '{{ request()->getSchemeAndHttpHost() }}/api/emails',
     headers={'Authorization': f'Bearer {api_key}'},
     json={
         'from': 'App <noreply@code-labs.nl>',
-        'to': 'gebruiker@voorbeeld.nl',
-        'subject': 'Welkom!',
-        'html': '<h1>Welkom!</h1>',
+        'to': 'user@example.com',
+        'subject': 'Welcome!',
+        'html': '<h1>Welcome!</h1>',
     }
 )
-email_id = response.json()['id']</code></pre>
-                    </div>
-                </div>
+email_id = response.json()['id']</div>
+
             </div>
         </div>
+
     </div>
 </div>
 @endsection
