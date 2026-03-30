@@ -79,13 +79,14 @@
 @section('scripts')
 <script>
 // Shortcodes — defined in JS only, never in Blade markup
+const L = '{'+'{', R = '}'+'}';
 const shortcodes = [
-    { label: 'First Name', code: '{{contact.first_name}}' },
-    { label: 'Last Name', code: '{{contact.last_name}}' },
-    { label: 'Email', code: '{{contact.email}}' },
-    { label: 'Full Name', code: '{{contact.full_name}}' },
-    { label: 'Date', code: '{{date}}' },
-    { label: 'Company', code: '{{company}}' },
+    { label: 'First Name', code: L+'contact.first_name'+R },
+    { label: 'Last Name', code: L+'contact.last_name'+R },
+    { label: 'Email', code: L+'contact.email'+R },
+    { label: 'Full Name', code: L+'contact.full_name'+R },
+    { label: 'Date', code: L+'date'+R },
+    { label: 'Company', code: L+'company'+R },
 ];
 
 // Build shortcode buttons
@@ -120,12 +121,12 @@ const starterHtml = `<!DOCTYPE html>
             <h1 style="margin:0;font-size:22px;">Your Newsletter Title</h1>
         </div>
         <div class="content">
-            <p>Hi {{contact.first_name}},</p>
+            <p>Hi '+L+'contact.first_name'+R+',</p>
             <p>Your email content goes here.</p>
             <p><a href="#" style="display:inline-block;background:#0073e6;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;">Call to Action</a></p>
         </div>
         <div class="footer">
-            <p>&copy; {{company}} &middot; <a href="#">Unsubscribe</a></p>
+            <p>&copy; '+L+'company'+R+' &middot; <a href="#">Unsubscribe</a></p>
         </div>
     </div>
 </body>
