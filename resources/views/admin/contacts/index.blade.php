@@ -4,6 +4,7 @@
 
 @section('actions')
 <button class="btn btn--secondary btn--sm" onclick="document.getElementById('audience-dialog').showModal()">+ Create audience</button>
+<a href="/admin/contacts/import" class="btn btn--secondary btn--sm">Import CSV</a>
 <a href="/admin/contacts/create" class="btn btn--primary btn--sm">+ Add contact</a>
 @endsection
 
@@ -32,9 +33,24 @@
 
     {{-- Contact list --}}
     <div style="flex:1;min-width:0;">
+        {{-- Tag filter badges --}}
+        @if(isset($tags) && $tags->count())
+        <div style="display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:1rem;">
+            <a href="{{ request()->fullUrlWithQuery(['tag' => null]) }}" style="text-decoration:none;">
+                <span class="badge {{ !request('tag') ? 'badge--info' : 'badge--neutral' }}" style="cursor:pointer;">All</span>
+            </a>
+            @foreach($tags as $tag)
+                <a href="{{ request()->fullUrlWithQuery(['tag' => $tag->id]) }}" style="text-decoration:none;">
+                    <span class="badge {{ request('tag') == $tag->id ? 'badge--info' : 'badge--neutral' }}" style="cursor:pointer;">{{ $tag->name }}</span>
+                </a>
+            @endforeach
+        </div>
+        @endif
+
         {{-- Search bar --}}
         <form method="GET" action="/admin/contacts" style="margin-bottom:1rem;">
             @if(request('audience'))<input type="hidden" name="audience" value="{{ request('audience') }}">@endif
+            @if(request('tag'))<input type="hidden" name="tag" value="{{ request('tag') }}">@endif
             <div style="position:relative;">
                 <svg style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:1rem;height:1rem;color:var(--text-tertiary);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input type="text" name="search" class="form-input" value="{{ request('search') }}" placeholder="Search contacts by email or name..." style="padding-left:2.5rem;">
@@ -48,6 +64,7 @@
                         <th>Email</th>
                         <th>Name</th>
                         <th>Audiences</th>
+                        <th>Tags</th>
                         <th>Status</th>
                         <th>Created</th>
                         <th style="width:1%"></th>
@@ -65,6 +82,17 @@
                                 @foreach($contact->audiences as $audience)
                                     <span class="badge badge--info">{{ $audience->name }}</span>
                                 @endforeach
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:.25rem;flex-wrap:wrap;">
+                                @if($contact->tags && $contact->tags->count())
+                                    @foreach($contact->tags as $tag)
+                                        <span class="badge badge--neutral">{{ $tag->name }}</span>
+                                    @endforeach
+                                @else
+                                    <span class="tbl__text-muted">—</span>
+                                @endif
                             </div>
                         </td>
                         <td>
@@ -86,7 +114,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="tbl__empty">No contacts found. <a href="/admin/contacts/create" class="text-link">Add your first contact</a></td></tr>
+                    <tr><td colspan="7" class="tbl__empty">No contacts found. <a href="/admin/contacts/create" class="text-link">Add your first contact</a></td></tr>
                     @endforelse
                 </tbody>
             </table>

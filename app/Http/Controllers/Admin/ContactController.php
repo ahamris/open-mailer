@@ -4,30 +4,37 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Audience;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Contact::orderByDesc('created_at');
+        $query = Contact::with(['audiences', 'tags'])->orderByDesc('created_at');
+
         if ($audienceId = $request->get('audience')) {
             $query->whereHas('audiences', fn ($q) => $q->where('audiences.id', $audienceId));
+        }
+        if ($tagId = $request->get('tag')) {
+            $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
         }
         if ($search = $request->get('q')) {
             $query->where(fn ($q) => $q->where('email', 'like', "%{$search}%")
                 ->orWhere('first_name', 'like', "%{$search}%")
                 ->orWhere('last_name', 'like', "%{$search}%"));
         }
+
         return view('admin.contacts.index', [
             'contacts' => $query->paginate(25),
             'audiences' => Audience::withCount('contacts')->get(),
+            'tags' => Tag::withCount('contacts')->get(),
         ]);
     }
 
     public function create()
     {
-        return view('admin.contacts.form', ['contact' => null, 'audiences' => Audience::all()]);
+        return view('admin.contacts.form', ['contact' => null, 'audiences' => Audience::all(), 'tags' => Tag::all()]);
     }
 
     public function store(Request $request)
@@ -37,18 +44,21 @@ class ContactController extends Controller
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
             'audiences' => 'nullable|array',
+            'tags' => 'nullable|array',
         ]);
         $contact = Contact::create($data);
-        if (!empty($data['audiences'])) {
-            $contact->audiences()->sync($data['audiences']);
-        }
+        if (!empty($data['audiences'])) $contact->audiences()->sync($data['audiences']);
+        if (!empty($data['tags'])) $contact->tags()->sync($data['tags']);
         return redirect('/admin/contacts')->with('success', 'Contact created');
     }
 
     public function edit(string $id)
     {
-        $contact = Contact::with('audiences')->findOrFail($id);
-        return view('admin.contacts.form', ['contact' => $contact, 'audiences' => Audience::all()]);
+        return view('admin.contacts.form', [
+            'contact' => Contact::with(['audiences', 'tags'])->findOrFail($id),
+            'audiences' => Audience::all(),
+            'tags' => Tag::all(),
+        ]);
     }
 
     public function update(Request $request, string $id)
@@ -59,9 +69,11 @@ class ContactController extends Controller
             'first_name' => 'nullable|string',
             'last_name' => 'nullable|string',
             'audiences' => 'nullable|array',
+            'tags' => 'nullable|array',
         ]);
         $contact->update($data);
         $contact->audiences()->sync($data['audiences'] ?? []);
+        $contact->tags()->sync($data['tags'] ?? []);
         return redirect('/admin/contacts')->with('success', 'Contact updated');
     }
 

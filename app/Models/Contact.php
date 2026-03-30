@@ -8,13 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Contact extends Model
 {
     use HasFactory, HasUuids;
-    protected $fillable = ['email', 'first_name', 'last_name', 'unsubscribed', 'metadata'];
-    protected $casts = ['unsubscribed' => 'boolean', 'metadata' => 'array'];
+    protected $fillable = ['email', 'first_name', 'last_name', 'unsubscribed', 'confirmed', 'confirmation_token', 'confirmed_at', 'metadata'];
+    protected $casts = ['unsubscribed' => 'boolean', 'confirmed' => 'boolean', 'confirmed_at' => 'datetime', 'metadata' => 'array'];
 
-    public function audiences()
-    {
-        return $this->belongsToMany(Audience::class, 'audience_contact')->withTimestamps();
-    }
+    public function audiences() { return $this->belongsToMany(Audience::class, 'audience_contact')->withTimestamps(); }
+    public function tags() { return $this->belongsToMany(Tag::class, 'contact_tag'); }
 
     public function getFullNameAttribute(): string
     {
