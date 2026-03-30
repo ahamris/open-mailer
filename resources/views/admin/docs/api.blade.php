@@ -24,6 +24,8 @@
                 <a href="#send-batch" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">POST /emails/batch</a>
                 <a href="#get-emails" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">GET /emails</a>
                 <a href="#get-email" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">GET /emails/:id</a>
+                <a href="#domains-api" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">Domains</a>
+                <a href="#api-keys-api" class="text-link text-sm" style="padding:.25rem .5rem;border-radius:.375rem;">API Keys</a>
             </nav>
             <p class="text-xs font-semibold" style="color:var(--text-tertiary);text-transform:uppercase;margin:.75rem 0 .5rem;">SDKs</p>
             <nav style="display:flex;flex-direction:column;gap:.125rem;">
@@ -131,6 +133,107 @@
             </div>
         </div>
 
+
+        {{-- POST /emails/batch --}}
+        <div id="send-batch" class="card">
+            <div class="card__header">
+                <span class="card__header-title">POST /emails/batch</span>
+                <span class="badge badge--info">Batch Send</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">Send up to <strong>100 emails</strong> in a single request. Each email is processed independently in the queue.</p>
+                <p style="margin-bottom:.75rem;">Request body is an <strong>array</strong> of email objects (same schema as POST /emails):</p>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:.75rem;white-space:pre;">[
+  {"from": "App <noreply@example.com>", "to": "a@example.com", "subject": "Hello A", "html": "<p>Hi A</p>"},
+  {"from": "App <noreply@example.com>", "to": "b@example.com", "subject": "Hello B", "html": "<p>Hi B</p>"}
+]</div>
+                <p class="text-sm text-muted">Response: <code>{"data": [{"id": "uuid-1"}, {"id": "uuid-2"}]}</code></p>
+            </div>
+        </div>
+
+        {{-- GET /emails --}}
+        <div id="get-emails" class="card">
+            <div class="card__header">
+                <span class="card__header-title">GET /emails</span>
+                <span class="badge badge--neutral">List Emails</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">Returns a paginated list of outbound emails, newest first.</p>
+                <table class="tbl">
+                    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>cursor</code></td><td>string</td><td>Cursor for pagination (from <code>next_cursor</code> in response)</td></tr>
+                    </tbody>
+                </table>
+                <p class="text-sm text-muted" style="margin-top:.75rem;">Response includes <code>data</code> array, <code>next_cursor</code>, and <code>prev_cursor</code>.</p>
+            </div>
+        </div>
+
+        {{-- GET /emails/:id --}}
+        <div id="get-email" class="card">
+            <div class="card__header">
+                <span class="card__header-title">GET /emails/:id</span>
+                <span class="badge badge--neutral">Get Email</span>
+            </div>
+            <div class="card__body">
+                <p style="margin-bottom:.75rem;">Retrieve the full details of a specific email, including content and delivery status.</p>
+                <div style="background:var(--n700);color:var(--n200);padding:.75rem 1rem;border-radius:.5rem;font-family:monospace;font-size:.8125rem;overflow-x:auto;margin-bottom:.75rem;white-space:pre;">{
+  "id": "019d39bc-5508-7356-8c58-bb93aa3f76f9",
+  "from": "CLOM <noreply@code-labs.nl>",
+  "to": ["user@example.com"],
+  "subject": "Welcome!",
+  "status": "sent",
+  "html": "<h1>Welcome!</h1>",
+  "created_at": "2026-03-29T13:15:37.000000Z",
+  "sent_at": "2026-03-29T13:15:39.000000Z"
+}</div>
+                <p class="text-sm text-muted">Additional endpoints:</p>
+                <table class="tbl" style="margin-top:.5rem;">
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>PATCH</code></td><td><code>/emails/:id</code></td><td>Update a scheduled email (change <code>scheduled_at</code>)</td></tr>
+                        <tr><td><code>DELETE</code></td><td><code>/emails/:id</code></td><td>Cancel a scheduled email</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Domains --}}
+        <div id="domains-api" class="card">
+            <div class="card__header">
+                <span class="card__header-title">Domains</span>
+            </div>
+            <div class="card__body">
+                <table class="tbl">
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>GET</code></td><td><code>/domains</code></td><td>List all domains</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/domains</code></td><td>Add a domain <code>{"name": "example.com"}</code></td></tr>
+                        <tr><td><code>GET</code></td><td><code>/domains/:id</code></td><td>Get domain details + DNS records</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/domains/:id/verify</code></td><td>Verify DNS (SPF, DKIM, DMARC, MX)</td></tr>
+                        <tr><td><code>DELETE</code></td><td><code>/domains/:id</code></td><td>Remove a domain</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- API Keys --}}
+        <div id="api-keys-api" class="card">
+            <div class="card__header">
+                <span class="card__header-title">API Keys</span>
+            </div>
+            <div class="card__body">
+                <table class="tbl">
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>GET</code></td><td><code>/api-keys</code></td><td>List API keys (key prefix only)</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api-keys</code></td><td>Create key <code>{"name": "...", "permission": "full_access"}</code></td></tr>
+                        <tr><td><code>DELETE</code></td><td><code>/api-keys/:id</code></td><td>Revoke an API key</td></tr>
+                    </tbody>
+                </table>
+                <p class="text-sm text-muted" style="margin-top:.75rem;">The full API key token is only returned once on creation. Store it securely.</p>
+            </div>
+        </div>
         {{-- SDK Examples --}}
         <div id="sdk-curl" class="card">
             <div class="card__header">
