@@ -10,9 +10,7 @@ class TemplateController extends Controller
 {
     public function index()
     {
-        return view('admin.templates.index', [
-            'templates' => Template::orderByDesc('updated_at')->get(),
-        ]);
+        return view('admin.templates.index', ['templates' => Template::orderByDesc('updated_at')->get()]);
     }
 
     public function create()
@@ -54,5 +52,21 @@ class TemplateController extends Controller
     {
         Template::findOrFail($id)->delete();
         return redirect('/admin/templates')->with('success', 'Template deleted');
+    }
+
+    // GrapesJS drag-and-drop builder
+    public function builder(string $id)
+    {
+        return view('admin.templates.builder', ['template' => Template::findOrFail($id)]);
+    }
+
+    public function saveBuilder(Request $request, string $id)
+    {
+        $template = Template::findOrFail($id);
+        $template->update([
+            'html_body' => $request->input('html'),
+            'grapes_json' => $request->input('grapes_json'),
+        ]);
+        return response()->json(['success' => true]);
     }
 }

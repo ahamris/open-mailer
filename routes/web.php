@@ -112,4 +112,19 @@ Route::middleware('auth:admin')->prefix('admin')->group(function () {
     Route::get('/docs/api', [DocsController::class, 'api']);
     Route::get('/docs/guide', [DocsController::class, 'guide']);
     Route::get('/docs/swagger', [DocsController::class, 'swagger']);
+
+    // Drip Campaigns
+    Route::get("/drips", [\App\Http\Controllers\Admin\DripCampaignController::class, "index"]);
+    Route::get("/drips/create", [\App\Http\Controllers\Admin\DripCampaignController::class, "create"]);
+    Route::post("/drips", [\App\Http\Controllers\Admin\DripCampaignController::class, "store"]);
+    Route::get("/drips/{id}", [\App\Http\Controllers\Admin\DripCampaignController::class, "show"]);
+    Route::get("/drips/{id}/edit", [\App\Http\Controllers\Admin\DripCampaignController::class, "edit"]);
+    Route::put("/drips/{id}", [\App\Http\Controllers\Admin\DripCampaignController::class, "update"]);
+    Route::post("/drips/{id}/toggle", [\App\Http\Controllers\Admin\DripCampaignController::class, "toggle"]);
+    Route::delete("/drips/{id}", [\App\Http\Controllers\Admin\DripCampaignController::class, "destroy"]);
+
+    // Template Builder (GrapesJS)
+    Route::get("/templates/{id}/builder", [\App\Http\Controllers\Admin\TemplateController::class, "builder"]);
+    Route::post("/templates/{id}/builder", [\App\Http\Controllers\Admin\TemplateController::class, "saveBuilder"]);
 });
+// We'll fix this properly in the agent
